@@ -9,7 +9,7 @@ import touchNavigation from './core/touch-navigation.js';
 import Slide from './core/slide.js';
 import * as _ from './utils/helpers.js';
 
-const version = '3.0.6';
+const version = '3.0.0';
 const isMobile = _.isMobile();
 const isTouch = _.isTouch();
 const html = document.getElementsByTagName('html')[0];
@@ -20,12 +20,10 @@ const defaults = {
     skin: 'clean',
     closeButton: true,
     startAt: null,
-    autoplayVideos: true,
-    autofocusVideos: true,
+
     descPosition: 'bottom',
     width: '900px',
     height: '506px',
-    videosWidth: '960px',
     beforeSlideChange: null,
     afterSlideChange: null,
     beforeSlideLoad: null,
@@ -47,25 +45,6 @@ const defaults = {
     touchFollowAxis: true,
     keyboardNavigation: true,
     closeOnOutsideClick: true,
-    plyr: {
-        css: 'https://cdn.plyr.io/3.6.3/plyr.css',
-        js: 'https://cdn.plyr.io/3.6.3/plyr.js',
-        config: {
-            ratio: '16:9', // or '4:3'
-            youtube: {
-                noCookie: true,
-                rel: 0,
-                showinfo: 0,
-                iv_load_policy: 3 // eslint-disable-line camelcase
-            },
-            vimeo: {
-                byline: false,
-                portrait: false,
-                title: false,
-                transparent: false
-            }
-        }
-    },
     openEffect: 'zoom', // fade, zoom, none
     closeEffect: 'zoom', // fade, zoom, none
     slideEffect: 'slide', // fade, slide, zoom, none
@@ -130,7 +109,6 @@ class GlightboxInit {
     constructor(options = {}) {
         this.settings = _.extend(defaults, options);
         this.effectsClasses = this.getAnimationClasses();
-        this.videoPlayers = {};
         this.apiEvents = [];
         this.fullElementsList = false;
     }
@@ -188,11 +166,10 @@ class GlightboxInit {
         const scrollBar = window.innerWidth - document.documentElement.clientWidth;
         if (scrollBar > 0) {
             var styleSheet = document.createElement('style');
-            styleSheet.type = 'text/css';
             styleSheet.className = 'gcss-styles';
             styleSheet.innerText = `.gscrollbar-fixer {margin-right: ${scrollBar}px}`;
             document.head.appendChild(styleSheet);
-            _.addClass(body, 'gscrollbar-fixer');
+            _.addClass(html, 'gscrollbar-fixer');
         }
 
         _.addClass(body, 'glightbox-open');
@@ -284,7 +261,7 @@ class GlightboxInit {
 
         this.slideDescription = slideNode.querySelector('.gslide-description');
         this.slideDescriptionContained = this.slideDescription && _.hasClass(this.slideDescription.parentNode, 'gslide-media');
-
+        //NOTE: gslide-media
         // Preload subsequent slides
         if (this.settings.preload) {
             this.preloadSlide(index + 1);
@@ -327,23 +304,14 @@ class GlightboxInit {
             slideNode: slideNode,
             slideConfig: slide.slideConfig,
             slideIndex: index,
-            trigger: slide.node,
-            player: null
+            trigger: slide.node
         };
 
         this.trigger('slide_before_load', slideData);
 
-        if (type == 'video' || type == 'external') {
-            setTimeout(() => {
-                slide.instance.setContent(slideNode, () => {
-                    this.trigger('slide_after_load', slideData);
-                });
-            }, 200);
-        } else {
-            slide.instance.setContent(slideNode, () => {
-                this.trigger('slide_after_load', slideData);
-            });
-        }
+        slide.instance.setContent(slideNode, () => {
+            this.trigger('slide_after_load', slideData);
+        });
     }
 
 
@@ -506,8 +474,7 @@ class GlightboxInit {
             slideNode: this.prevActiveSlide,
             slideIndex: this.prevActiveSlide,
             slideConfig: (_.isNil(this.prevActiveSlideIndex) ? null : this.elements[this.prevActiveSlideIndex].slideConfig),
-            trigger: (_.isNil(this.prevActiveSlideIndex) ? null : this.elements[this.prevActiveSlideIndex].node),
-            player: this.getSlidePlayerInstance(this.prevActiveSlideIndex)
+            trigger: (_.isNil(this.prevActiveSlideIndex) ? null : this.elements[this.prevActiveSlideIndex].node)
         };
 
         let nextData = {
@@ -516,8 +483,7 @@ class GlightboxInit {
             slideNode: this.activeSlide,
             slideConfig: this.elements[this.index].slideConfig,
             slideIndex: this.index,
-            trigger: this.elements[this.index].node,
-            player: this.getSlidePlayerInstance(this.index)
+            trigger: this.elements[this.index].node
         };
         if (slideMedia.offsetWidth > 0 && slideDesc) {
             _.hide(slideDesc);
@@ -526,10 +492,6 @@ class GlightboxInit {
         _.removeClass(slide, this.effectsClasses);
         if (first) {
             _.animateElement(slide, this.settings.cssEfects[this.settings.openEffect].in, () => {
-                if (this.settings.autoplayVideos) {
-                    this.slidePlayerPlay(slide);
-                }
-
                 this.trigger('slide_changed', {
                     prev: prevData,
                     current: nextData
@@ -549,10 +511,6 @@ class GlightboxInit {
                 }
             }
             _.animateElement(slide, animIn, () => {
-                if (this.settings.autoplayVideos) {
-                    this.slidePlayerPlay(slide);
-                }
-
                 this.trigger('slide_changed', {
                     prev: prevData,
                     current: nextData
@@ -588,8 +546,6 @@ class GlightboxInit {
         let animation = this.settings.slideEffect;
         let animOut = (animation !== 'none' ? this.settings.cssEfects[animation].out : animation);
 
-        this.slidePlayerPause(prevSlide);
-
         this.trigger('slide_before_change', {
             prev: {
                 index: this.prevActiveSlideIndex, //this will be removed in the future
@@ -597,8 +553,7 @@ class GlightboxInit {
                 slideNode: this.prevActiveSlide,
                 slideIndex: this.prevActiveSlideIndex,
                 slideConfig: (_.isNil(this.prevActiveSlideIndex) ? null : this.elements[this.prevActiveSlideIndex].slideConfig),
-                trigger: (_.isNil(this.prevActiveSlideIndex) ? null : this.elements[this.prevActiveSlideIndex].node),
-                player: this.getSlidePlayerInstance(this.prevActiveSlideIndex)
+                trigger: (_.isNil(this.prevActiveSlideIndex) ? null : this.elements[this.prevActiveSlideIndex].node)
             },
             current: {
                 index: this.index, //this will be removed in the future
@@ -606,8 +561,7 @@ class GlightboxInit {
                 slideNode: this.activeSlide,
                 slideIndex: this.index,
                 slideConfig: this.elements[this.index].slideConfig,
-                trigger: this.elements[this.index].node,
-                player: this.getSlidePlayerInstance(this.index)
+                trigger: this.elements[this.index].node
             }
         });
 
@@ -615,12 +569,10 @@ class GlightboxInit {
         if (_.isFunction(this.settings.beforeSlideChange)) {
             this.settings.beforeSlideChange.apply(this, [{
                 index: this.prevActiveSlideIndex,
-                slide: this.prevActiveSlide,
-                player: this.getSlidePlayerInstance(this.prevActiveSlideIndex)
+                slide: this.prevActiveSlide
             }, {
                 index: this.index,
-                slide: this.activeSlide,
-                player: this.getSlidePlayerInstance(this.index)
+                slide: this.activeSlide
             }]);
         }
         if (this.prevActiveSlideIndex > this.index && this.settings.slideEffect == 'slide') { // going back
@@ -638,115 +590,6 @@ class GlightboxInit {
             }
             _.removeClass(prevSlide, 'prev');
         });
-    }
-
-    /**
-     * Get all defined players
-     */
-    getAllPlayers() {
-        return this.videoPlayers;
-    }
-
-    /**
-     * Get player at index
-     *
-     * @param index
-     * @return bool|object
-     */
-    getSlidePlayerInstance(index) {
-        const id = 'gvideo' + index;
-        const videoPlayers = this.getAllPlayers();
-
-        if (_.has(videoPlayers, id) && videoPlayers[id]) {
-            return videoPlayers[id];
-        }
-
-        return false;
-    }
-
-    /**
-     * Stop video at specified
-     * node or index
-     *
-     * @param slide node or index
-     * @return void
-     */
-    stopSlideVideo(slide) {
-        if (_.isNode(slide)) {
-            let node = slide.querySelector('.gvideo-wrapper');
-            if (node) {
-                slide = node.getAttribute('data-index');
-            }
-        }
-        console.log('stopSlideVideo is deprecated, use slidePlayerPause');
-        const player = this.getSlidePlayerInstance(slide);
-        if (player && player.playing) {
-            player.pause();
-        }
-    }
-
-    /**
-     * Stop player at specified index
-     *
-     * @param slide node or index
-     * @return void
-     */
-    slidePlayerPause(slide) {
-        if (_.isNode(slide)) {
-            let node = slide.querySelector('.gvideo-wrapper');
-            if (node) {
-                slide = node.getAttribute('data-index');
-            }
-        }
-        const player = this.getSlidePlayerInstance(slide);
-        if (player && player.playing) {
-            player.pause();
-        }
-    }
-
-    /**
-     * Play video at specified
-     * node or index
-     *
-     * @param slide node or index
-     * @return void
-     */
-    playSlideVideo(slide) {
-        if (_.isNode(slide)) {
-            let node = slide.querySelector('.gvideo-wrapper');
-            if (node) {
-                slide = node.getAttribute('data-index');
-            }
-        }
-        console.log('playSlideVideo is deprecated, use slidePlayerPlay');
-        const player = this.getSlidePlayerInstance(slide);
-        if (player && !player.playing) {
-            player.play();
-        }
-    }
-
-    /**
-     * Play media player at specified
-     * node or index
-     *
-     * @param slide node or index
-     * @return void
-     */
-    slidePlayerPlay(slide) {
-        if (_.isNode(slide)) {
-            let node = slide.querySelector('.gvideo-wrapper');
-            if (node) {
-                slide = node.getAttribute('data-index');
-            }
-        }
-
-        const player = this.getSlidePlayerInstance(slide);
-        if (player && !player.playing) {
-            player.play();
-            if (this.settings.autofocusVideos) {
-                player.elements.container.focus();
-            }
-        }
     }
 
 
@@ -1044,7 +887,6 @@ class GlightboxInit {
         }
 
         const winSize = _.windowSize();
-        const video = slide.querySelector('.gvideo-wrapper');
         const image = slide.querySelector('.gslide-image');
         const description = this.slideDescription;
 
@@ -1057,7 +899,7 @@ class GlightboxInit {
             _.removeClass(document.body, 'glightbox-mobile');
         }
 
-        if (!video && !image) {
+        if (!image) {
             return;
         }
 
@@ -1066,50 +908,17 @@ class GlightboxInit {
             descriptionResize = true;
         }
 
-        if (image) {
-            if (winWidth <= 768) {
-                let imgNode = image.querySelector('img');
-                imgNode.setAttribute('style', '');
-            } else if (descriptionResize) {
-                let descHeight = description.offsetHeight;
-                let imgNode = image.querySelector('img');
+        if (winWidth <= 768) {
+            let imgNode = image.querySelector('img');
+            imgNode.setAttribute('style', '');
+        } else if (descriptionResize) {
+            let descHeight = description.offsetHeight;
+            let imgNode = image.querySelector('img');
 
-                imgNode.setAttribute('style', `max-height: calc(100vh - ${descHeight}px)`);
-                description.setAttribute('style', `max-width: ${imgNode.offsetWidth}px;`);
-            }
+            imgNode.setAttribute('style', `max-height: calc(100vh - ${descHeight}px)`);
+            description.setAttribute('style', `max-width: ${imgNode.offsetWidth}px;`);
         }
 
-        if (video) {
-            let ratio = (_.has(this.settings.plyr.config, 'ratio') ? this.settings.plyr.config.ratio : '16:9');
-            let videoRatio = ratio.split(':');
-
-            // TODO: Verify if this is still required as with now accepts multiple values
-            // let maxWidth = slideData.width;
-            let maxWidth = 900;
-            let maxHeight = maxWidth / (parseInt(videoRatio[0]) / parseInt(videoRatio[1]));
-            maxHeight = Math.floor(maxHeight);
-
-            if (descriptionResize) {
-                winHeight = winHeight - description.offsetHeight;
-            }
-
-            if (winHeight < maxHeight && winWidth > maxWidth) {
-                let vwidth = video.offsetWidth;
-                let vheight = video.offsetHeight;
-                let ratio = winHeight / vheight;
-                let vsize = { width: vwidth * ratio, height: vheight * ratio };
-                video.parentNode.setAttribute('style', `max-width: ${vsize.width}px`);
-
-                if (descriptionResize) {
-                    description.setAttribute('style', `max-width: ${vsize.width}px;`);
-                }
-            } else {
-                video.parentNode.style.maxWidth = `${maxWidth}px`;
-                if (descriptionResize) {
-                    description.setAttribute('style', `max-width: ${maxWidth}px;`);
-                }
-            }
-        }
     }
 
 
@@ -1140,8 +949,8 @@ class GlightboxInit {
             _.addClass(this.nextButton, 'disabled');
         }
     }
-
-
+   
+   
     /**
      * Handle loop config
      */
@@ -1152,7 +961,7 @@ class GlightboxInit {
         return loop;
     }
 
-
+    
     /**
      * Close Lightbox
      * closes the lightbox and removes the slides
@@ -1175,7 +984,6 @@ class GlightboxInit {
             return false;
         }
         this.closing = true;
-        this.slidePlayerPause(this.activeSlide);
 
         if (this.fullElementsList) {
             this.elements = this.fullElementsList;
@@ -1286,8 +1094,15 @@ class GlightboxInit {
     }
 }
 
-export default function (options = {}) {
-    const instance = new GlightboxInit(options);
+const add_on_settings = {
+    onOpen: () => {
+        if(document.querySelector('.gotop')) //NOTE
+            document.querySelector('.gotop').style.right = "calc(5% + " + scrollBar + "px)";  
+    }
+}
+
+export default function () {
+    const instance = new GlightboxInit(add_on_settings);
     instance.init();
 
     return instance;

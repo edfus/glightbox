@@ -17,13 +17,10 @@ async function createFolder() {
     jetpack.remove(path.join(folder, 'glightbox-master.zip'));
 
     const tmpfolder = path.join("./.temp/", 'glightbox-master');
-    const newVersion = args[0] || "3.0.6";
-
-    await updateFileVersion({
-        file: path.join(folder, 'index.html'),
-        search: /download\/(.*)\/glightbox/g,
-        replace: newVersion
-    });
+    const newVersion = args[0];
+    
+    if(!newVersion)
+        notify("Version name not provided", "possible choice: 3.0.6")  || process.exit(1);
 
     await updateFileVersion({
         file: path.join(folder, 'package.json'),

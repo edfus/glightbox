@@ -176,85 +176,6 @@
         </div>
     </section>
 
-
-    <!-- Videos example -->
-    <section class="section">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <h3><i class="fa fa-video-camera heading-icon" aria-hidden="true"></i>Videos Gallery</h3>
-                    <p>You can add videos with optional autoplay for <strong>Vimeo</strong>, <strong>Youtube</strong> and
-                        <strong>self hosted videos</strong>. You can specify a
-                        default width for the videos or set
-                        different widths to each video in your gallery. The videos are 100% responsive and will play correctly on mobile devices.</p>
-
-
-                    <ul class="box-container three-cols">
-                        <li class="box">
-                            <div class="inner">
-                                <a href="https://vimeo.com/115041822" class="glightbox3">
-                                    <img src="demo/img/small/gm10.jpg" alt="image">
-                                </a>
-                            </div>
-                        </li>
-                        <li class="box">
-                            <div class="inner">
-                                <a href="https://www.youtube-nocookie.com/embed/Ga6RYejo6Hk" class="glightbox3">
-                                    <img src="demo/img/small/gm11.jpg" alt="image">
-                                </a>
-                            </div>
-                        </li>
-                        <li class="box">
-                            <div class="inner">
-                                <a href="./demo/pexels-video-1550080.mp4" class="glightbox3">
-                                    <img src="demo/img/small/gm12.jpg" alt="image">
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Iframes and inline example -->
-    <section class="section pair">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <h3><i class="fa fa-window-restore heading-icon" aria-hidden="true"></i>Iframes and Inline Elements</h3>
-                    <p>You can easily add iframes by simply entering the url, it could be a web page, a video, google maps, etc. also
-                        you can display any div of your page by entering the ID in the href attribute.</p>
-
-                    <ul class="box-container three-cols">
-                        <li class="box">
-                            <div class="inner">
-                                <a href="#inline-example" class="glightbox4" data-glightbox="width: 700; height: auto;">
-                                    <img src="demo/img/small/gm14.jpg" alt="image">
-                                </a>
-                            </div>
-                        </li>
-                        <li class="box">
-                            <div class="inner">
-                                <a href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12085.977306439116!2d-73.96648875371474!3d40.77314541916876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c258bf08488f6b%3A0x618706a9142daa0d!2sUpper+East+Side%2C+Nueva+York%2C+EE.+UU.!5e0!3m2!1ses-419!2smx!4v1511830027642" class="glightbox4">
-                                    <img src="demo/img/small/gm15.jpg" alt="image">
-                                </a>
-                            </div>
-                        </li>
-                        <li class="box">
-                            <div class="inner">
-                                <a href="./demo/pexels-video-1550080.mp4" class="glightbox4">
-                                    <img src="demo/img/small/gm16.jpg" alt="image">
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section id="specifications" class="container section">
         <div class="container">
             <div class="row">
@@ -319,21 +240,6 @@
     </section>
 
 
-    <div id="inline-example" style="display: none;">
-        <div class="inline-inner">
-            <h4 class="text-center">Example of inline content</h4>
-            <p class="text-center">
-                <form>
-                    <input type="text" name="mamma" placeholder="name">
-                    <input type="text" name="passs" placeholder="password">
-                </form>
-
-                Duis quis ipsum vehicula eros ultrices lacinia. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-                posuere cubilia Curae; Donec nec sollicitudin felis. Donec vel nulla vel leo varius tempor. Duis suscipit pharetra quam id imperdiet. Praesent vitae eros metus. Donec placerat sagittis rhoncus. In condimentum eleifend ante et ornare. Curabitur pharetra nibh non purus gravida lobortis. In risus risus, malesuada vitae iaculis nec, semper vitae ligula. Nullam vel eros ac libero cursus consectetur.</p>
-
-            <a class="gtrigger-close inline-close-btn" href="#">Close Box</a>
-        </div>
-    </div>
 
     <footer class="text-center">
         <div class="wrap copyright">
@@ -356,55 +262,6 @@
         var lightboxVideo = GLightbox({
             selector: '.glightbox3'
         });
-        lightboxVideo.on('slide_changed', ({ prev, current }) => {
-            console.log("Prev slide", prev);
-            console.log("Current slide", current);
-
-            const { slideIndex, slideNode, slideConfig, player } = current;
-
-            if (player) {
-                if (!player.ready) {
-                    // If player is not ready
-                    player.on('ready', event => {
-                        // Do something when video is ready
-                    });
-                }
-
-                player.on('play', event => {
-                    console.log("Started play");
-                });
-
-                player.on('volumechange', event => {
-                    console.log("Volume change");
-                });
-
-                player.on('ended', event => {
-                    console.log("Video ended");
-                });
-            }
-        });
-
-        var lightboxInlineIframe = GLightbox({
-            'selector': '.glightbox4'
-        });
-
-
-        /* var exampleApi = GLightbox({ selector: null });
-        exampleApi.insertSlide({
-            href: 'https://picsum.photos/1200/800',
-        });
-        exampleApi.insertSlide({
-            width: '500px',
-            content: '<p>Example</p>'
-        });
-        exampleApi.insertSlide({
-            href: 'https://www.youtube.com/watch?v=WzqrwPhXmew',
-        });
-        exampleApi.insertSlide({
-            width: '200vw',
-            content: document.getElementById('inline-example')
-        });
-        exampleApi.open(); */
     </script>
 </body>
 
