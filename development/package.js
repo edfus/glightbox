@@ -1,5 +1,4 @@
 const fs = require('fs');
-const os = require('os');
 const jetpack = require('fs-jetpack');
 const path = require('path');
 const archiver = require('archiver');
@@ -10,15 +9,15 @@ const folder = path.join(__dirname, '/..');
 /**
  * Realease new version
  * calling
- * node development/package.js versionhere
+ * node development/package.js version here
  * then npm publish
  */
 
 async function createFolder() {
     jetpack.remove(path.join(folder, 'glightbox-master.zip'));
 
-    const tmpfolder = path.join(os.tmpdir(), 'glightbox-master');
-    const newVersion = args[0];
+    const tmpfolder = path.join("./.temp/", 'glightbox-master');
+    const newVersion = args[0] || "3.0.6";
 
     await updateFileVersion({
         file: path.join(folder, 'index.html'),
@@ -55,7 +54,9 @@ async function createFolder() {
             '!.vscode',
             '!.vscode/**/*',
             '!*.psd',
-            '!.DS_Store'
+            '!.DS_Store',
+            '!.temp',
+            '!.temp/**/*',
         ]
     });
     notify('Created folder', `Created folder correctly`);

@@ -20,7 +20,7 @@ function postcssCompiler(config) {
     const min = path.join(__dirname, '../', dest, fileName.replace(fileNameMin, `.min${fileNameMin}`));
     const css = fs.readFileSync(from, 'utf8');
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         return postcss([
                 cssnested(),
                 cssnext({
