@@ -211,3 +211,4 @@ export default class DragSlides {
         node.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
     }
 }
+ 

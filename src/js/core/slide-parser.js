@@ -28,38 +28,9 @@ export default class SlideConfigParser {
      * @param {string} url
      */
     sourceType(url) {
-        let origin = url;
-        url = url.toLowerCase();
-
-        if (url.match(/\.(jpeg|jpg|jpe|gif|png|apn|webp|svg)$/) !== null) {
+        // if (url.match(/\.(jpeg|jpg|jpe|gif|png|apn|webp|svg)$/i) !== null) {
             return 'image';
-        }
-        if (url.match(/(youtube\.com|youtube-nocookie\.com)\/watch\?v=([a-zA-Z0-9\-_]+)/) || url.match(/youtu\.be\/([a-zA-Z0-9\-_]+)/) || url.match(/(youtube\.com|youtube-nocookie\.com)\/embed\/([a-zA-Z0-9\-_]+)/)) {
-            return 'video';
-        }
-        if (url.match(/vimeo\.com\/([0-9]*)/)) {
-            return 'video';
-        }
-        if (url.match(/\.(mp4|ogg|webm|mov)$/) !== null) {
-            return 'video';
-        }
-        if (url.match(/\.(mp3|wav|wma|aac|ogg)$/) !== null) {
-            return 'audio';
-        }
-
-        // Check if inline content
-        if (url.indexOf('#') > -1) {
-            let hash = origin.split('#').pop();
-            if (hash.trim() !== '') {
-                return 'inline';
-            }
-        }
-        // Ajax
-        if (url.indexOf('goajax=true') > -1) {
-            return 'ajax';
-        }
-
-        return 'external';
+        // }
     }
 
     parseConfig(element, settings) {
@@ -67,11 +38,7 @@ export default class SlideConfigParser {
 
         if (isObject(element) && !isNode(element)) {
             if (!has(element, 'type')) {
-                if (has(element, 'content') && element.content) {
-                    element.type = 'inline';
-                } else if (has(element, 'href')) {
-                    element.type = this.sourceType(element.href);
-                }
+                element.type = this.sourceType(element.href);
             }
             let objectData = extend(data, element);
             this.setSize(objectData, settings);
@@ -84,10 +51,10 @@ export default class SlideConfigParser {
         let nodeType = element.nodeName.toLowerCase();
         if (nodeType === 'a') {
             url = element.href;
-        }
-        if (nodeType === 'img') {
-            url = element.src;
-        }
+        } //
+        // if (nodeType === 'img') {
+        //     url = element.src;
+        // }
 
         data.href = url;
 
@@ -100,10 +67,6 @@ export default class SlideConfigParser {
                 data[key] = this.sanitizeValue(nodeData);
             }
         });
-
-        if (data.content) {
-            data.type = 'inline';
-        }
 
         if (!data.type && url) {
             data.type = this.sourceType(url);
@@ -135,12 +98,12 @@ export default class SlideConfigParser {
                     data.title = title;
                 }
             }
-            if (!data.title && nodeType == 'img') {
-                let alt = element.alt;
-                if (!isNil(alt) && alt !== '') {
-                    data.title = alt;
-                }
-            }
+            // if (!data.title && nodeType == 'img') {
+            //     let alt = element.alt;
+            //     if (!isNil(alt) && alt !== '') {
+            //         data.title = alt;
+            //     }
+            // }
         }
 
         if (data.description && data.description.substring(0, 1) == '.' && document.querySelector(data.description)) {
@@ -169,7 +132,7 @@ export default class SlideConfigParser {
      * @return { object }
      */
     setSize(data, settings) {
-        const defaultWith = (data.type == 'video' ? this.checkSize(settings.videosWidth) : this.checkSize(settings.width));
+        const defaultWith = this.checkSize(settings.width);
         const defaultHeight = this.checkSize(settings.height);
 
         data.width = (has(data, 'width') && data.width !== '' ? this.checkSize(data.width) : defaultWith);

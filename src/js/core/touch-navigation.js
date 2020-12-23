@@ -25,10 +25,10 @@ function resetSlideMove(slide) {
 
     addClass(media, 'greset')
     cssTransform(media, `translate3d(0, 0, 0)`)
-    let animation = addEvent(transitionEnd, {
+    addEvent(transitionEnd, {
         onElement: media,
         once: true,
-        withCallback: (event, target) => {
+        withCallback: () => {
             removeClass(media, 'greset')
         }
     })

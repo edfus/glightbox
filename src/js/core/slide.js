@@ -7,9 +7,6 @@
 import ZoomImages from './zoom.js';
 import DragSlides from './drag.js';
 import slideImage from '../slides/image.js';
-import slideVideo from '../slides/video.js';
-import slideInline from '../slides/inline.js';
-import slideIframe from '../slides/iframe.js';
 import SlideConfigParser from './slide-parser.js';
 import { addEvent, addClass, removeClass, hasClass, closest, isMobile, isFunction, createHTML } from '../utils/helpers.js';
 
@@ -98,60 +95,29 @@ export default class Slide {
         addClass(slideMedia, `gslide-${type}`);
         addClass(slide, 'loaded');
 
-        if (type === 'video') {
-            slideVideo.apply(this.instance, [slide, slideConfig, finalCallback]);
-            return;
-        }
+        return slideImage(slide, slideConfig, () => {
+            const img = slide.querySelector('img');
 
-        if (type === 'external') {
-            slideIframe.apply(this, [slide, slideConfig, finalCallback]);
-            return;
-        }
-
-        if (type === 'inline') {
-            slideInline.apply(this.instance, [slide, slideConfig, finalCallback]);
             if (slideConfig.draggable) {
                 new DragSlides({
-                    dragEl: slide.querySelector('.gslide-inline'),
+                    dragEl: img,
                     toleranceX: settings.dragToleranceX,
                     toleranceY: settings.dragToleranceY,
                     slide: slide,
                     instance: this.instance
                 });
             }
-            return;
-        }
+            if (slideConfig.zoomable && img.naturalWidth > img.offsetWidth) {
+                addClass(img, 'zoomable');
+                new ZoomImages(img, slide, () => {
+                    this.instance.resize();
+                });
+            }
 
-        if (type === 'image') {
-            slideImage(slide, slideConfig, () => {
-                const img = slide.querySelector('img');
-
-                if (slideConfig.draggable) {
-                    new DragSlides({
-                        dragEl: img,
-                        toleranceX: settings.dragToleranceX,
-                        toleranceY: settings.dragToleranceY,
-                        slide: slide,
-                        instance: this.instance
-                    });
-                }
-                if (slideConfig.zoomable && img.naturalWidth > img.offsetWidth) {
-                    addClass(img, 'zoomable');
-                    new ZoomImages(img, slide, () => {
-                        this.instance.resize();
-                    });
-                }
-
-                if (isFunction(finalCallback)) {
-                    finalCallback();
-                }
-            });
-            return;
-        }
-
-        if (isFunction(finalCallback)) {
-            finalCallback();
-        }
+            if (isFunction(finalCallback)) {
+                finalCallback();
+            }
+        });
     }
 
 
