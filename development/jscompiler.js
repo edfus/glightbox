@@ -1,50 +1,62 @@
 const { rollup } = require('rollup');
 const babel = require('rollup-plugin-babel');
-const resolve = require('rollup-plugin-node-resolve');
+const rollup_resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const path = require('path');
 
 global.rollupCache = global.rollupCache || {};
 
-
-function camelCase(str) {
+function toCamelCase(str) {
     return str.replace(/(?:^\w|[A-Z]|\b\w|[-_])/g, (letter, index) => {
         return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
     }).replace(/\s+/g, '').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
 }
 
+class TestConfig {
+    constructor (config) {
+        return key => {
+            return {
+                orDefault (defaultValue) {
+                    return config.hasOwnProperty(key) ? config[key] : defaultValue;
+                }
+            }
+        }
+    }
+}
+
 function jscompiler(config) {
     const {
-        file,
+        file: file_input,
         dest
     } = config;
 
-    const fileName = path.basename(file);
-    const extension = path.extname(fileName);
-    const singleFileName = fileName.replace(extension, '');
-    const cache = global.rollupCache[fileName] ? global.rollupCache[fileName] : null;
-    const format = (config.hasOwnProperty('format') ? config.format : 'iife');
-    const strict = (config.hasOwnProperty('strict') ? config.strict : true);
-    const sourcemap = (config.hasOwnProperty('sourcemap') ? config.sourcemap : false);
-    const moduleID = (config.hasOwnProperty('moduleID') ? config.moduleID : false);
+    const _config = new TestConfig(config);
 
-    let name = (config.hasOwnProperty('name') ? config.name : camelCase(singleFileName));
-    let outPutFile = path.join(__dirname, '../', dest, fileName);
-    let customFileName = (config.hasOwnProperty('fileName') ? config.fileName : false);
-
-    if (customFileName) {
-        customFileName = customFileName.replace('{name}', singleFileName);
-        outPutFile = outPutFile.replace(fileName, customFileName);
+    const file = new class {
+        input = file_input
+        input_base = path.basename(this.input)
+        input_ext = path.extname(this.input_base)
+        input_without_ext = this.input_base.replace(this.input_ext, '')
+        output = path.join(__dirname, '../', dest, this.input_base)
     }
 
-    return new Promise((res, rej) => {
+    const cache = global.rollupCache[file.input_base] ? global.rollupCache[file.input_base] : null;
+
+    if ('fileName' in config) {
+        file.output = file.output
+                          .replace(file.input_base, 
+                                config.fileName.replace('{name}', file.input_without_ext)
+                            );
+    }
+
+    return new Promise((resolve, reject) => {
         rollup({
-            input: file,
+            input: file.input,
             cache: cache,
             plugins: [
-                resolve({
+                rollup_resolve({
                     mainFields: ['module', 'main'],
-                    browser: true,
+                    browser: true
                 }),
                 commonjs(),
                 babel({
@@ -57,26 +69,26 @@ function jscompiler(config) {
                     ]
                 }),
             ]
-        }).then((bundle) => {
-            global.rollupCache[fileName] = bundle.cache;
-            bundle.write({
-                file: outPutFile,
-                format: format, // amd, cjs, esm, iife, umd
-                strict: strict,
-                sourcemap: sourcemap,
-                name: (moduleID ? moduleID : name)
+        }).then(async (bundle) => {
+            global.rollupCache[file.input_base] = bundle.cache;
+            await bundle.write({
+                file: file.output,
+                format: _config("format").orDefault("iife"),
+                strict: _config("strict").orDefault(true),
+                sourcemap: _config("sourcemap").orDefault(false),
+                name: _config("moduleID")
+                        .orDefault(
+                            _config("name")
+                                .orDefault(toCamelCase(file.input_without_ext))
+                            )
             }).then(() => {
-                res(true);
+                resolve(true);
             }).catch(error => {
                 console.error(error)
-                rej(error);
+                reject(error);
             });
 
-            return outPutFile;
-
-        }).catch(error => {
-            console.log(error)
-            throw new Error(error);
+            return file.output;
         })
     })
 }
