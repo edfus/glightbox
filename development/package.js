@@ -5,6 +5,14 @@ const archiver = require('archiver');
 const args = process.argv.slice(2);
 const notify = require('./notifications');
 const folder = path.join(__dirname, '/..');
+const { buildGlightboxJS, buildGlightboxCSS } = require("./builder");
+
+if(extractArg(/(--build(-only)?=)|(-b)/i))
+    return Promise.all([
+        buildGlightboxJS(),
+        buildGlightboxCSS()
+    ]).then(() => notify("\nBuild finished", "Quiting...\n") || process.exit());
+else return createFolder();
 
 /**
  * Realease new version
@@ -17,10 +25,20 @@ async function createFolder() {
     jetpack.remove(path.join(folder, 'glightbox-master.zip'));
 
     const tmpfolder = path.join("./.temp/", 'glightbox-master');
-    const newVersion = args[0];
     
-    if(!newVersion)
-        notify("Version name not provided", "possible choice: 3.0.6")  || process.exit(1);
+    let newVersion;  
+    try { 
+        newVersion = extractArg(/(--version=)/i)
+                        || args[0].split(/^v?((\d+\.)+\d+)/)[1]
+    } finally {
+        if(!newVersion
+            && !args.some((arg, index) => /-v/i.test(arg) ? (newVersion = args[index + 1]) : false)
+            ) {
+                notify("Version name not provided", "possible choice: 3.0.6")  || process.exit(1);
+        }
+    }
+
+    console.log("Version:", newVersion);
 
     await updateFileVersion({
         file: path.join(folder, 'package.json'),
@@ -68,8 +86,6 @@ async function createFolder() {
 
     notify('Done', `Packaging process ended correctly`);
 }
-createFolder();
-
 
 
 async function createZip(folder) {
@@ -79,7 +95,7 @@ async function createZip(folder) {
         const archive = archiver('zip', { zlib: { level: 9 } });
 
         output.on('close', () => {
-            notify('Zipped', `zip archive was created correctly`);
+            notify('Zipped', `Zip archive was created correctly`);
             resolve(name);
         });
         archive.on('error', (err) => {
@@ -110,4 +126,14 @@ async function updateFileVersion(data) {
             });
         });
     })
+}
+
+function extractArg(matchPattern) {
+    for (let i = 0; i < args.length; i++) {
+        if (matchPattern.test(args[i])) {
+            const split = args[i].split(matchPattern)
+            return split[split.length - 1];
+        }
+    }
+    return false;
 }
