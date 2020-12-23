@@ -24,3 +24,7 @@ Thumbs.db
 /src/js/glightboxTest.js
 sitepsd.psd
 package-lock.json
+
+
+# add-on
+.temp/
