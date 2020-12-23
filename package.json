@@ -1,10 +1,11 @@
 {
   "name": "glightbox",
-  "version": "3.0.0",
+  "version": "3.1.2",
   "description": "Pure Javascript lightbox",
   "main": "dist/js/glightbox.min.js",
   "scripts": {
-    "watch": "node development/watcher.js"
+    "watch": "node development/watcher.js",
+    "pack": "node development/package.js"
   },
   "author": "Biati Digital",
   "keywords": [
