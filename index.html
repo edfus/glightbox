@@ -131,14 +131,14 @@
                     <ul class="box-container three-cols">
                         <li class="box">
                             <div class="inner">
-                                <a href="demo/img/large/gm7.jpg" class="glightbox2" data-glightbox="title:Description Bottom; description: You can set the position of the description &lt;a href=&quot;http://google.com&quot;&gt;with a link to Google&lt;/a&gt;">
+                                <a href="demo/img/large/gm7.jpg" class="glightbox" data-glightbox="title:Description Bottom; description: You can set the position of the description &lt;a href=&quot;http://google.com&quot;&gt;with a link to Google&lt;/a&gt;">
                                     <img src="demo/img/small/gm7.jpg" alt="image">
                                 </a>
                             </div>
                         </li>
                         <li class="box">
                             <div class="inner">
-                                <a href="demo/img/large/gm8.jpg" class="glightbox2" data-glightbox="title: Description Right; description: .custom-desc1; descPosition: right;">
+                                <a href="demo/img/large/gm8.jpg" class="glightbox" data-glightbox="title: Description Right; description: .custom-desc1; descPosition: right;">
                                     <img src="demo/img/small/gm8.jpg" alt="image">
                                 </a>
 
@@ -159,7 +159,7 @@
                         </li>
                         <li class="box">
                             <div class="inner">
-                                <a href="demo/img/large/gm9.jpg" class="glightbox2" data-glightbox="title: Description Left; description: .custom-desc2; descPosition: left;">
+                                <a href="demo/img/large/gm9.jpg" class="glightbox" data-glightbox="title: Description Left; description: .custom-desc2; descPosition: left;">
                                     <img src="demo/img/small/gm9.jpg" alt="image">
                                 </a>
                                 <div class="glightbox-desc custom-desc2">
@@ -247,21 +247,11 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
     <script src="demo/js/valde.min.js"></script>
     <script src="dist/js/glightbox.js"></script>
     <script src="demo/js/site.js"></script>
     <script>
-        var lightbox = GLightbox();
-        lightbox.on('open', (target) => {
-            console.log("lightbox opened");
-        });
-        var lightboxDescription = GLightbox({
-            selector: '.glightbox2',
-        });
-        var lightboxVideo = GLightbox({
-            selector: '.glightbox3'
-        });
+        new GLightbox();
     </script>
 </body>
 
