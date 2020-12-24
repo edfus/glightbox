@@ -1,11 +1,12 @@
-const postcss = require('postcss');
-const cssnext = require('postcss-preset-env');
-const cssnested = require('postcss-nested');
-const cssmqpacker = require('css-mqpacker');
-const cssprettify = require('postcss-prettify');
-const cssclean = require('clean-css');
-const path = require('path');
-const fs = require('fs');
+import postcss from 'postcss';
+import cssnext from 'postcss-preset-env';
+import cssnested from 'postcss-nested';
+import cssmqpacker from 'css-mqpacker';
+import cssprettify from 'postcss-prettify';
+import cssclean from 'clean-css';
+import { basename, join, extname } from 'path';
+import { readFileSync, writeFile } from 'fs';
+import __dirname from "./__dirname.js";
 
 function postcssCompiler(config) {
     const {
@@ -13,12 +14,12 @@ function postcssCompiler(config) {
         dest,
         minify = true
     } = config;
-    const fileName = path.basename(file);
-    const from = path.join(__dirname, '../', file);
-    const to = path.join(__dirname, '../', dest, fileName);
-    const fileNameMin = path.extname(fileName);
-    const min = path.join(__dirname, '../', dest, fileName.replace(fileNameMin, `.min${fileNameMin}`));
-    const css = fs.readFileSync(from, 'utf8');
+    const fileName = basename(file);
+    const from = join(__dirname, '../', file);
+    const to = join(__dirname, '../', dest, fileName);
+    const fileNameMin = extname(fileName);
+    const min = join(__dirname, '../', dest, fileName.replace(fileNameMin, `.min${fileNameMin}`));
+    const css = readFileSync(from, 'utf8');
 
     return new Promise(async (resolve, reject) => {
         return postcss([
@@ -41,15 +42,15 @@ function postcssCompiler(config) {
             })
             .then(result => {
                 if (result && result.css) {
-                    fs.writeFile(to, result.css, 'utf8', (err) => reject(err));
+                    writeFile(to, result.css, 'utf8', (err) => reject(err));
 
 
                     if (minify) {
                         const minified = new cssclean({}).minify(result.css);
-                        fs.writeFile(min, minified.styles, 'utf8', (err) => reject(err));
+                        writeFile(min, minified.styles, 'utf8', (err) => reject(err));
 
                         if (result.map) {
-                            fs.writeFile(to + '.map', result.map, 'utf8', (err) => reject(err));
+                            writeFile(to + '.map', result.map, 'utf8', (err) => reject(err));
                         }
                     }
 
@@ -65,4 +66,4 @@ function postcssCompiler(config) {
     })
 }
 
-module.exports = postcssCompiler;
+export default postcssCompiler;

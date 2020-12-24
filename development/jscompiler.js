@@ -1,8 +1,9 @@
-const { rollup } = require('rollup');
-const babel = require('rollup-plugin-babel');
-const rollup_resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const path = require('path');
+import rollup  from 'rollup';
+import babel from 'rollup-plugin-babel';
+import rollup_resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
+import { basename, extname, join } from 'path';
+import __dirname from "./__dirname.js";
 
 global.rollupCache = global.rollupCache || {};
 
@@ -34,10 +35,10 @@ function jscompiler(config) {
 
     const file = new class {
         input = file_input
-        input_base = path.basename(this.input)
-        input_ext = path.extname(this.input_base)
+        input_base = basename(this.input)
+        input_ext = extname(this.input_base)
         input_without_ext = this.input_base.replace(this.input_ext, '')
-        output = path.join(__dirname, '../', dest, this.input_base)
+        output = join(__dirname, '../', dest, this.input_base)
     }
 
     const cache = global.rollupCache[file.input_base] ? global.rollupCache[file.input_base] : null;
@@ -93,4 +94,4 @@ function jscompiler(config) {
     })
 }
 
-module.exports = jscompiler;
+export default jscompiler;

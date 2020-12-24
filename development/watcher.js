@@ -1,12 +1,11 @@
-const chokidar = require('chokidar');
-const notify = require('./notifications');
-const { buildGlightboxJS, buildGlightboxCSS } = require("./builder");
+import { watch } from 'chokidar';
+import { buildGlightboxJS, buildGlightboxCSS } from "./builder.js";
 
 /**
  * Watcher for js and css files
  */
 function filesWatcher() {
-    const watcher = chokidar.watch(['src'], {
+    const watcher = watch(['src'], {
         ignored: ['.DS_Store', 'src/js/.jshintrc', 'src/js/.babelrc'],
         persistent: true,
         depth: 3,
