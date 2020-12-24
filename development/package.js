@@ -1,5 +1,4 @@
 const fs = require('fs');
-const jetpack = require('fs-jetpack');
 const path = require('path');
 const archiver = require('archiver');
 const args = process.argv.slice(2);
@@ -11,7 +10,7 @@ if(extractArg(/(--build(-only)?=)|(-b)/i))
     return Promise.all([
         buildGlightboxJS(),
         buildGlightboxCSS()
-    ]).then(() => notify("\nBuild finished", "Quiting...\n") || process.exit());
+    ]).then(() => console.info("\nDone.\n") || process.exit());
 else return createFolder();
 
 /**
@@ -26,7 +25,7 @@ async function createFolder() {
 
     const tmpfolder = path.join("./.temp/", 'glightbox-master');
     
-    let newVersion;  
+    let newVersion;
     try { 
         newVersion = extractArg(/(--version=)/i)
                         || args[0].split(/^v?((\d+\.)+\d+)/)[1]
@@ -74,7 +73,7 @@ async function createFolder() {
             '!.temp/**/*',
         ]
     });
-    notify('Created folder', `Created folder correctly`);
+    console.info('Folder created correctly');
 
     const zip = await createZip(tmpfolder).catch(error => {
         jetpack.remove(tmpfolder);
@@ -82,9 +81,9 @@ async function createFolder() {
 
     const folderName = path.basename(folder);
     jetpack.remove(tmpfolder);
-    jetpack.move(zip, path.join(folder, folderName +'-master.zip'));
+    jetpack.move(zip, path.join(folder, folderName.concat('-master.zip')));
 
-    notify('Done', `Packaging process ended correctly`);
+    console.info("Packaging process done.");
 }
 
 
@@ -95,12 +94,12 @@ async function createZip(folder) {
         const archive = archiver('zip', { zlib: { level: 9 } });
 
         output.on('close', () => {
-            notify('Zipped', `Zip archive was created correctly`);
-            resolve(name);
+            console.info(`Zip archive was created correctly`);
+            return resolve(name);
         });
         archive.on('error', (err) => {
             notify('Package Error', `The was an error creating the zip.`)
-            reject(err);
+            return reject(err);
         });
 
         archive.pipe(output);

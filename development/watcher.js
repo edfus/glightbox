@@ -24,7 +24,7 @@ function filesWatcher() {
             return buildGlightboxCSS();
         }
     })
-    watcher.on('ready', () => notify('Watching files', 'Initial scan complete. Ready for changes'))
+    watcher.on('ready', () => console.info('Now watching files, up for changes.'))
 }
 
 filesWatcher();

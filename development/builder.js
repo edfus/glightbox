@@ -38,7 +38,6 @@ async function buildGlightboxJS() {
 
   if (!res) {
       notify('Build Error', `View logs for more info`);
-      console.log(res)
       return false;
   }
 
@@ -50,8 +49,7 @@ async function buildGlightboxJS() {
 
   fs.writeFileSync(minifyPath, minified.code);
 
-  notify('Build', `Compiled and Minified ${name}`);
-
+  console.info(`Built, Compiled and Minified ${name}`);
   return true;
 }
 
@@ -75,8 +73,7 @@ async function buildGlightboxCSS() {
   if (!res) {
       return false;
   }
-  notify('Build', `Compiled and Minified ${name}`);
-
+  console.info(`Built, Compiled and Minified ${name}`);
   return true;
 }
 
