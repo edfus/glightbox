@@ -1,11 +1,11 @@
 import { join } from 'path';
-import _notify  from 'node-notifier';
+import notifier  from 'node-notifier';
 import __dirname from "./__dirname.js";
 
 function notify(title, body) {
     const icon = join(__dirname, 'icon.png');
 
-    _notify({
+    notifier.notify({
         title: title,
         message: body,
         icon: icon
