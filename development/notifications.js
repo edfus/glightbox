@@ -1,10 +1,11 @@
-const path = require('path');
-const notifier = require('node-notifier');
+import { join } from 'path';
+import _notify  from 'node-notifier';
+import __dirname from "./__dirname.js";
 
 function notify(title, body) {
-    const icon = path.join(__dirname, 'icon.png');
+    const icon = join(__dirname, 'icon.png');
 
-    notifier.notify({
+    _notify({
         title: title,
         message: body,
         icon: icon
@@ -12,4 +13,4 @@ function notify(title, body) {
     console.warn(`${title}, ${body}`);
 }
 
-module.exports = notify;
+export default notify;

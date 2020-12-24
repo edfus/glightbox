@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const notify = require('./notifications');
-const jscompiler = require('./jscompiler');
-const postcssCompiler = require('./postcss');
-const terser = require('terser');
+import { readFileSync, writeFileSync } from 'fs';
+import { join, basename } from 'path';
+import notify from './notifications.js';
+import jscompiler from './jscompiler.js';
+import postcssCompiler from './postcss.js';
+import minify from 'terser';
 
 let config = {
   js: {
@@ -24,9 +24,9 @@ let config = {
 * @return { Promise<Boolean> }
 */
 async function buildGlightboxJS() {
-  const file = path.join(config.js.src, 'glightbox.js');
+  const file = join(config.js.src, 'glightbox.js');
 
-  const name = path.basename(file);
+  const name = basename(file);
 
   const res = await jscompiler({
       file,
@@ -42,12 +42,12 @@ async function buildGlightboxJS() {
   }
 
   const minName = name.replace('.js', '.min.js');
-  const processed = path.join(config.js.dest, name);
-  const code = fs.readFileSync(processed, 'utf8');
-  const minified = terser.minify(code);
-  const minifyPath = path.join(config.js.dest, minName);
+  const processed = join(config.js.dest, name);
+  const code = readFileSync(processed, 'utf8');
+  const minified = minify(code);
+  const minifyPath = join(config.js.dest, minName);
 
-  fs.writeFileSync(minifyPath, minified.code);
+  writeFileSync(minifyPath, minified.code);
 
   console.info(`Built, Compiled and Minified ${name}`);
   return true;
@@ -61,8 +61,8 @@ async function buildGlightboxJS() {
 * @return { Promise<Boolean> }
 */
 async function buildGlightboxCSS() {
-  const file = path.join(config.css.src, 'glightbox.css');
-  const name = path.basename(file);
+  const file = join(config.css.src, 'glightbox.css');
+  const name = basename(file);
   const dest = config.css.dest;
 
   let res = await postcssCompiler({
@@ -77,4 +77,4 @@ async function buildGlightboxCSS() {
   return true;
 }
 
-module.exports = { buildGlightboxJS, buildGlightboxCSS }
+export { buildGlightboxJS, buildGlightboxCSS }

@@ -1,17 +1,21 @@
-const fs = require('fs');
-const path = require('path');
-const archiver = require('archiver');
-const args = process.argv.slice(2);
-const notify = require('./notifications');
-const folder = path.join(__dirname, '/..');
-const { buildGlightboxJS, buildGlightboxCSS } = require("./builder");
+import fs, { promises as fsp } from 'fs';
+import path from 'path';
+import archiver from 'archiver';
+import notify from './notifications.js';
+import { buildGlightboxJS, buildGlightboxCSS } from "./builder.js";
+import __dirname from "./__dirname.js";
 
-if(extractArg(/(--build(-only)?=)|(-b)/i))
+const args = process.argv.slice(2);
+const root_directory = path.join(__dirname, '/..');
+
+(async () => {
+    if(extractArg(/(--build(-only)?=)|(-b)/i))
     return Promise.all([
         buildGlightboxJS(),
         buildGlightboxCSS()
     ]).then(() => console.info("\nDone.\n") || process.exit());
-else return createFolder();
+    else return createFolder();
+})
 
 /**
  * Realease new version
@@ -21,7 +25,7 @@ else return createFolder();
  */
 
 async function createFolder() {
-    jetpack.remove(path.join(folder, 'glightbox-master.zip'));
+    await fsp.rm(path.join(root_directory, 'glightbox-master.zip'));
 
     const tmpfolder = path.join("./.temp/", 'glightbox-master');
     
@@ -40,24 +44,24 @@ async function createFolder() {
     console.log("Version:", newVersion);
 
     await updateFileVersion({
-        file: path.join(folder, 'package.json'),
+        file: path.join(root_directory, 'package.json'),
         search: /"version":\s?"(.*)",/g,
         replace: newVersion
     });
 
     await updateFileVersion({
-        file: path.join(folder, 'README.md'),
+        file: path.join(root_directory, 'README.md'),
         search: /v([0-9-.]+)/g,
         replace: newVersion
     });
 
     await updateFileVersion({
-        file: path.join(folder, 'src/js/glightbox.js'),
+        file: path.join(root_directory, 'src/js/glightbox.js'),
         search: /version\s?=\s?'(.*)';/g,
         replace: newVersion
     });
 
-    jetpack.copy(folder, tmpfolder, {
+    jetpack.copy(root_directory, tmpfolder, {
         matching: [
             '!node_modules',
             '!node_modules/**/*',
@@ -79,17 +83,17 @@ async function createFolder() {
         jetpack.remove(tmpfolder);
     });
 
-    const folderName = path.basename(folder);
+    const folderName = path.basename(root_directory);
     jetpack.remove(tmpfolder);
-    jetpack.move(zip, path.join(folder, folderName.concat('-master.zip')));
+    jetpack.move(zip, path.join(root_directory, folderName.concat('-master.zip')));
 
     console.info("Packaging process done.");
 }
 
 
-async function createZip(folder) {
+async function createZip(root_directory) {
     return new Promise((resolve, reject) => {
-        const name = folder + '.zip';
+        const name = root_directory + '.zip';
         const output = fs.createWriteStream(name);
         const archive = archiver('zip', { zlib: { level: 9 } });
 
@@ -103,7 +107,7 @@ async function createZip(folder) {
         });
 
         archive.pipe(output);
-        archive.directory(folder, false);
+        archive.directory(root_directory, false);
         archive.finalize();
     })
 }

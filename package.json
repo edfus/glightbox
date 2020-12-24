@@ -19,6 +19,7 @@
     "url": "https://github.com/edfus/glightbox",
     "type": "git"
   },
+  "type": "module",
   "devDependencies": {
     "@babel/cli": "^7.10.3",
     "@babel/core": "^7.10.3",
