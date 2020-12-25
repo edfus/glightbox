@@ -28,6 +28,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
+    "clean-css": "^4.2.3",
     "rollup": "^2.35.1",
     "rollup-plugin-babel": "^4.4.0",
     "rw-stream": "^0.3.3",

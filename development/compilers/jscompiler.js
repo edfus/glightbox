@@ -3,7 +3,7 @@ import { basename, extname, join } from 'path';
 import rollup from 'rollup';
 import babel from 'rollup-plugin-babel';
 
-import __dirname from "./helpers/__dirname.js";
+import __dirname from "../helpers/__dirname.js";
 
 global.rollupCache = global.rollupCache || {};
 
