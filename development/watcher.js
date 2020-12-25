@@ -17,7 +17,7 @@ function filesWatcher() {
 
     watcher.on('change', async file => {
         if (file.endsWith('glightbox.js')) {
-           return buildGlightboxJS();
+            return buildGlightboxJS();
         }
         if (file.endsWith('glightbox.css')) {
             return buildGlightboxCSS();
