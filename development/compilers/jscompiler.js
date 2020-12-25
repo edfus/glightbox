@@ -1,9 +1,10 @@
-import { basename, extname, join } from 'path';
+import { writeFile, readFile } from 'fs';
 
-import rollup from 'rollup';
+import { rollup } from 'rollup';
 import babel from 'rollup-plugin-babel';
+import { minify } from 'terser';
 
-import __dirname from "../helpers/__dirname.js";
+import { IsIn, FileIO } from "./normalizeConfig.js";
 
 global.rollupCache = global.rollupCache || {};
 
@@ -13,55 +14,26 @@ function toCamelCase(str) {
     }).replace(/\s+/g, '').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
 }
 
-class IsIn {
-    constructor (obj) {
-        return (key, ...left) => {
-            return {
-                orDefault (defaultValue) {
-                    if(left.length) {
-                        if(key in obj) return obj[key];
-                        for (let i = 0; i < left.length; i++) {
-                            if (left[i] in obj)
-                                return obj[left[i]];
-                        }
-                        return defaultValue;
-                    } else {
-                        return obj.hasOwnProperty(key) ? obj[key] : defaultValue;
-                    }
-                }
-            }
-        }
-    }
-}
-
-async function jscompiler(config) {
+async function jsCompiler(config) {
     const {
         file: file_input,
         dest
     } = config;
 
     const _config = new IsIn(config);
-
-    const file = new class {
-        input = file_input
-        input_base = basename(this.input)
-        input_ext = extname(this.input_base)
-        input_without_ext = this.input_base.replace(this.input_ext, '')
-        output = join(__dirname, '../', dest, this.input_base)
-    }
-
-    const cache = global.rollupCache[file.input_base] ? global.rollupCache[file.input_base] : null;
+    const file = new FileIO(file_input, dest);
+    const cache = global.rollupCache[file.input.base] ? global.rollupCache[file.input.base] : null;
 
     if ('fileName' in config) {
         file.output = file.output
-                          .replace(file.input_base, 
-                                config.fileName.replace('{name}', file.input_without_ext)
+                          .replace(file.input.base, 
+                                config.fileName.replace('{name}', file.input.without_ext)
                             );
     }
 
     return (
-        rollup.rollup({
-            input: file.input,
+        rollup({
+            input: file.input.path,
             cache: cache,
             plugins: [
                 babel({
@@ -78,18 +50,40 @@ async function jscompiler(config) {
                 }),
             ]
         }).then(async bundle => {
-            global.rollupCache[file.input_base] = bundle.cache;
+            global.rollupCache[file.input.base] = bundle.cache;
             await bundle.write({
                 file: file.output,
                 format: _config("format").orDefault("iife"),
                 strict: _config("strict").orDefault(true),
                 sourcemap: _config("sourcemap").orDefault(false),
                 name: _config("moduleID", "name")
-                        .orDefault(toCamelCase(file.input_without_ext))
+                        .orDefault(toCamelCase(file.input.without_ext))
             });
             return file.output;
         })
     );
 }
 
-export default jscompiler;
+
+/**
+ * @param { Object } options path: input file path, path_output: output file path
+ */
+async function jsMinifier (options) {
+    const {
+        path,
+        path_output
+    } = options;
+
+    return new Promise((resolve, reject) => {
+        readFile(path, async (err, data) => {
+            if(err)
+                return reject(err);
+            
+            writeFile(path_output, (await minify(data.toString())).code, err => 
+                err ? reject(err) : resolve(err) 
+            );
+        })
+    })
+}
+
+export { jsCompiler, jsMinifier };

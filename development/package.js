@@ -69,6 +69,9 @@ async function adoptVersion () {
         }
     }
 
+    if(/^(v?(0+\.)+0+)$/.test(newVersion))
+        return console.log("Using previous version number.");
+
     console.log("Version:", newVersion);
 
     await updateFileVersion({
