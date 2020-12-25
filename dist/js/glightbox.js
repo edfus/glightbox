@@ -1799,7 +1799,7 @@
     return Slide;
   }();
 
-  var _version = '3.0.0';
+  var _version = '3.1.4';
 
   var isMobile$1 = isMobile();
 

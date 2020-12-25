@@ -1,8 +1,10 @@
-import rollup  from 'rollup';
+import { basename, extname, join } from 'path';
+
+import rollup from 'rollup';
 import babel from 'rollup-plugin-babel';
 import rollup_resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import { basename, extname, join } from 'path';
+
 import __dirname from "./helpers/__dirname.js";
 
 global.rollupCache = global.rollupCache || {};
@@ -13,12 +15,12 @@ function toCamelCase(str) {
     }).replace(/\s+/g, '').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
 }
 
-class TestConfig {
-    constructor (config) {
+class IsIn {
+    constructor (obj) {
         return key => {
             return {
                 orDefault (defaultValue) {
-                    return config.hasOwnProperty(key) ? config[key] : defaultValue;
+                    return obj.hasOwnProperty(key) ? obj[key] : defaultValue;
                 }
             }
         }
@@ -31,7 +33,7 @@ async function jscompiler(config) {
         dest
     } = config;
 
-    const _config = new TestConfig(config);
+    const _config = new IsIn(config);
 
     const file = new class {
         input = file_input
@@ -51,7 +53,7 @@ async function jscompiler(config) {
     }
 
     return (
-        rollup({
+        rollup.rollup({
             input: file.input,
             cache: cache,
             plugins: [
