@@ -1,9 +1,10 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { join, basename } from 'path';
-import notify from './notifications.js';
+import minify from 'terser';
+
+import notify from './helpers/notify.js';
 import jscompiler from './jscompiler.js';
 import postcssCompiler from './postcss.js';
-import minify from 'terser';
 
 let config = {
   js: {
