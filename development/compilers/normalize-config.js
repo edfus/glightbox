@@ -34,7 +34,7 @@ class FileIO {
     const dst = _config("dest", "destination", "path_o", "path_output", "outputPath", "output_path")
                       .orDefault("");
     if(!isAbsolute(src) || !isAbsolute(dst))
-      throw config; // isAbsolute will return false with default value ""
+      throw new Error(config); // isAbsolute will return false with default value ""
 
     this._isInConfig = _config;
 
