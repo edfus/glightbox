@@ -4,7 +4,6 @@ import notify from './helpers/notify.js';
 import __dirname from "./helpers/__dirname.js";
 import jsCompiler from './compilers/rollup.js';
 import jsMinifier from "./compilers/terser.js";
-
 // import stylusCompiler from './compilers/stylus.js';
 
 const offset = join(__dirname, "../");
@@ -27,8 +26,9 @@ async function buildGlightboxJS() {
   const file = resolve(join(config.js.src, 'glightbox.js'));
 
   const outputFile = await jsCompiler({
-      file,
+      src:  file,
       dest: resolve(config.js.dest),
+      fileName: "{name}.js",
       format: 'umd', // amd, cjs, es, iife, umd, system. esm? universal module.
       sourcemap: false,
       moduleID: 'GLightbox'
@@ -37,13 +37,10 @@ async function buildGlightboxJS() {
     throw error;
   });
 
-  const minifiedPath_o = resolve(join(
-      config.js.dest, basename(file).replace('.js', '.min.js')
-    ));
-
   await jsMinifier({
-    path: outputFile,
-    path_output: minifiedPath_o
+      file: outputFile,
+      path_o: resolve(config.js.dest),
+      fileName: "{name}.min.js"
   })
 
   console.info(`Built, Compiled and Minified ${basename(file)}`)
