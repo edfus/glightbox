@@ -2,7 +2,8 @@ import { join, basename, resolve } from 'path';
 
 import notify from './helpers/notify.js';
 import __dirname from "./helpers/__dirname.js";
-import { jsCompiler, jsMinifier } from './compilers/jscompiler.js';
+import jsCompiler from './compilers/rollup.js';
+import jsMinifier from "./compilers/terser.js";
 
 // import stylusCompiler from './compilers/stylus.js';
 
