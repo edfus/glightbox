@@ -1,8 +1,5 @@
-import { writeFile, readFile } from 'fs';
-
 import { rollup } from 'rollup';
 import babel from 'rollup-plugin-babel';
-import { minify } from 'terser';
 
 import { IsIn, FileIO } from "./normalizeConfig.js";
 
@@ -65,25 +62,4 @@ async function jsCompiler(config) {
 }
 
 
-/**
- * @param { Object } options path: input file path, path_output: output file path
- */
-async function jsMinifier (options) {
-    const {
-        path,
-        path_output
-    } = options;
-
-    return new Promise((resolve, reject) => {
-        readFile(path, async (err, data) => {
-            if(err)
-                return reject(err);
-            
-            writeFile(path_output, (await minify(data.toString())).code, err => 
-                err ? reject(err) : resolve(err) 
-            );
-        })
-    })
-}
-
-export { jsCompiler, jsMinifier };
+export default jsCompiler;
