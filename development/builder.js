@@ -28,7 +28,7 @@ async function buildGlightboxJS() {
   await jscompiler({
       file,
       dest: config.js.dest,
-      format: 'umd',
+      format: 'umd', // amd, cjs, es, iife, umd, system. esm? universal module.
       sourcemap: false,
       moduleID: 'GLightbox'
   }).catch(error => {
