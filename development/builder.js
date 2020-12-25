@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFile } from 'fs';
 import { join, basename } from 'path';
-import minify from 'terser';
+import { minify } from 'terser';
 
 import notify from './helpers/notify.js';
 import jscompiler from './jscompiler.js';
@@ -25,7 +25,7 @@ async function buildGlightboxJS() {
 
   const name = basename(file);
 
-  await jscompiler({
+  const outputFile = await jscompiler({
       file,
       dest: config.js.dest,
       format: 'umd', // amd, cjs, es, iife, umd, system. esm? universal module.
@@ -37,14 +37,13 @@ async function buildGlightboxJS() {
   });
 
   const minName = name.replace('.js', '.min.js');
-  const processed = join(config.js.dest, name);
-  const code = readFileSync(processed, 'utf8');
-  const minified = minify.minify(code);
   const minifyPath = join(config.js.dest, minName);
 
-  writeFileSync(minifyPath, minified.code);
-
-  console.info(`Built, Compiled and Minified ${name}`);
+  return new Promise((resolve, reject) => {
+    writeFile(minifyPath, (await minify(outputFile)).code, err => 
+      err ? reject(err) : console.info(`Built, Compiled and Minified ${name}`) || resolve(err) 
+    );
+  })
 }
 
 

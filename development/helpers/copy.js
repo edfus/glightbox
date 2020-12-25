@@ -49,17 +49,19 @@ async function copy (src, dst, opts) {
 }
 
 async function touchItems_in (directory, { folder: dir_cb, file: file_cb}) {
-  return Promise.all(
-      fs.readdirSync(directory, {withFileTypes: true})
-          .map(async dirent_obj => {
-              if(dirent_obj.isDirectory()) {
-                  return dir_cb(path.join(directory, dirent_obj.name));
-              }
-              if(dirent_obj.isFile()) {
-                  return file_cb(path.join(directory, dirent_obj.name));
-              }
-              return false; // discard other file types
-          })
+  return (
+      fsp.readdir(directory, {withFileTypes: true})
+          .then(results => Promise.all(
+            results.map(async dirent_obj => {
+                if(dirent_obj.isDirectory()) {
+                    return dir_cb(path.join(directory, dirent_obj.name));
+                }
+                if(dirent_obj.isFile()) {
+                    return file_cb(path.join(directory, dirent_obj.name));
+                }
+                return false; // discard other file types
+            })
+          ))
   )
 }
 

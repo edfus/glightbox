@@ -4,11 +4,11 @@ import cssnested from 'postcss-nested';
 import cssmqpacker from 'css-mqpacker';
 import cssprettify from 'postcss-prettify';
 import cssclean from 'clean-css';
-import { basename, join, extname } from 'path';
-import { readFileSync, writeFile } from 'fs';
+import { basename, join, extname, resolve } from 'path';
+import { readFile, writeFile } from 'fs';
 import __dirname from "./helpers/__dirname.js";
 
-function postcssCompiler(config) {
+async function postcssCompiler(config) {
     const {
         file,
         dest,
@@ -19,7 +19,12 @@ function postcssCompiler(config) {
     const to = join(__dirname, '../', dest, fileName);
     const fileNameMin = extname(fileName);
     const min = join(__dirname, '../', dest, fileName.replace(fileNameMin, `.min${fileNameMin}`));
-    const css = readFileSync(from, 'utf8');
+    const css = await new Promise(
+        (resolve, reject) => 
+            readFile(from, 'utf8', 
+                (err, data) => err ? reject(err) : resolve(data)
+                )
+        );
 
     return new Promise(async (resolve, reject) => {
         return postcss([
