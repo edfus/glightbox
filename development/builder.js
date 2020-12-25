@@ -1,19 +1,21 @@
-import { writeFile } from 'fs';
-import { join, basename } from 'path';
-import { minify } from 'terser';
+import { join, basename, resolve } from 'path';
 
 import notify from './helpers/notify.js';
-import jscompiler from './compilers/jscompiler.js';
-import postcssCompiler from './compilers/postcss.js';
+import __dirname from "./helpers/__dirname.js";
+import { jsCompiler, jsMinifier } from './compilers/jscompiler.js';
+
+// import stylusCompiler from './compilers/stylus.js';
+
+const offset = join(__dirname, "../");
 
 let config = {
   js: {
-      src: 'src/js',
-      dest: 'dist/js',
+      src: offset.concat("src/js"),
+      dest: offset.concat("dist/js"),
   },
   css: {
-      src: 'src/postcss',
-      dest: 'dist/css',
+      src: offset.concat("src/postcss"),
+      dest: offset.concat("dist/css"),
   }
 };
 
@@ -21,13 +23,11 @@ let config = {
  * rollup, babel (es2015), minify.
  */
 async function buildGlightboxJS() {
-  const file = join(config.js.src, 'glightbox.js');
+  const file = resolve(join(config.js.src, 'glightbox.js'));
 
-  const name = basename(file);
-
-  const outputFile = await jscompiler({
+  const outputFile = await jsCompiler({
       file,
-      dest: config.js.dest,
+      dest: resolve(config.js.dest),
       format: 'umd', // amd, cjs, es, iife, umd, system. esm? universal module.
       sourcemap: false,
       moduleID: 'GLightbox'
@@ -36,14 +36,16 @@ async function buildGlightboxJS() {
     throw error;
   });
 
-  const minName = name.replace('.js', '.min.js');
-  const minifyPath = join(config.js.dest, minName);
+  const minifiedPath_o = resolve(join(
+      config.js.dest, basename(file).replace('.js', '.min.js')
+    ));
 
-  return new Promise((resolve, reject) => {
-    writeFile(minifyPath, (await minify(outputFile)).code, err => 
-      err ? reject(err) : console.info(`Built, Compiled and Minified ${name}`) || resolve(err) 
-    );
+  await jsMinifier({
+    path: outputFile,
+    path_output: minifiedPath_o
   })
+
+  console.info(`Built, Compiled and Minified ${basename(file)}`)
 }
 
 
@@ -51,20 +53,18 @@ async function buildGlightboxJS() {
 * Handle Postcss files
 */
 async function buildGlightboxCSS() {
-  const file = join(config.css.src, 'glightbox.css');
-  const name = basename(file);
-  const dest = config.css.dest;
+  const file = resolve(join(config.css.src, 'glightbox.css'));
 
-  // await postcssCompiler({
+  // await Compiler({
   //     file,
-  //     dest,
+  //     dest: resolve(config.css.dest),
   //     minify: true
   // }).catch(error => {
   //   notify('Build Error', `View logs for more info`);
   //   throw error;
   // });
 
-  console.info(`Built, Compiled and Minified ${name}`);
+  console.info(`Built, Compiled and Minified ${basename(file)}`);
 }
 
 export { buildGlightboxJS, buildGlightboxCSS }
