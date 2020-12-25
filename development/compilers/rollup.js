@@ -1,6 +1,6 @@
 import { rollup } from 'rollup';
 import babel from 'rollup-plugin-babel';
-import { FileIO } from "./normalizeConfig.js";
+import { FileIO } from "./normalize-config.js";
 
 global.rollupCache = global.rollupCache || {};
 
