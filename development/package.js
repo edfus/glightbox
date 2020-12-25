@@ -1,10 +1,10 @@
 import fs, { promises as fsp } from 'fs';
 import path from 'path';
-import notify from './notifications.js';
-import __dirname from "./__dirname.js";
-import rw from "rw-stream";
-import { Transform } from "stream";
-import { StringDecoder } from 'string_decoder';
+
+import notify from './helpers/notify.js';
+import __dirname from "./helpers/__dirname.js";
+import rw_stream from "./helpers/rw_stream.js";
+import copy from "./helpers/copy.js";
 
 const args = process.argv.slice(2);
 const root_directory = path.join(__dirname, '/..');
@@ -143,50 +143,6 @@ async function updateFileVersion(data) {
     });
 }
 
-async function rw_stream (filepath, separator, callback) {
-    const { readStream, writeStream } = await rw(filepath);
-    
-    return new Promise((resolve, reject) => {
-        let buffer = '';
-        const decoder = new StringDecoder('utf8');
-        
-        readStream
-            .pipe(
-                new Transform({
-                    transform (chunk, encoding, cb) {
-                        chunk = decoder.write(chunk);
-
-                        const parts = chunk.split(separator);
-                        buffer = buffer.concat(parts[0]);
-
-                        if(parts.length === 1) {
-                            return cb();
-                        }
-
-                        // length > 1
-                        this.push(callback(buffer, false));
-
-                        for(let i = 1; i < parts.length - 1; i++) {
-                            this.push(callback(parts[i], false));
-                        }
-
-                        buffer = parts[parts.length - 1];
-                        return cb();
-                    },
-                    flush (cb) { // outro
-                        return cb(
-                                null,
-                                callback(buffer, true)
-                            )
-                    }
-                })
-            )
-            .pipe(writeStream)
-                .on("finish", resolve)
-                .on("error", reject)
-    })
-}
-
 function extractArg(matchPattern) {
     for (let i = 0; i < args.length; i++) {
         if (matchPattern.test(args[i])) {
@@ -195,67 +151,4 @@ function extractArg(matchPattern) {
         }
     }
     return false;
-}
-
-/**
- * No check for src & dst's validation
- * Timestamp, mode, links and devices unhandled.
- * https://github.com/jprichardson/node-fs-extra/blob/master/lib/copy/copy.js
- */
-class TestRules {
-    constructor (rules) {
-        return name => rules.some(rule => {
-            switch (typeof rule) { 
-                case "string": return name === rule;
-                case "object": 
-                    if(rule instanceof RegExp)
-                        return rule.test(name);
-                default:
-                    return false; // invalid matching rule
-            }
-        })
-    }
-}
-
-async function copy (src, dst, opts) {
-    const matchRules = {
-        folders: new TestRules(opts.ignoreFolders),
-        files: new TestRules(opts.ignoreFiles)
-    }
-
-    const _copy = async (src, dst) => 
-        touchItems_in(src, {
-            folder: async folderPath => {
-                if ( !matchRules.folders( path.basename(folderPath) ) ) { // should not ignore
-                    const newPath = path.join(dst, folderPath.replace(src, ""))
-                    if(!fs.existsSync(newPath)) 
-                        await fsp.mkdir(newPath);
-                    return _copy(folderPath, newPath);
-                }
-            },
-    
-            file: async filePath => {
-                if ( !matchRules.files( path.basename(filePath) ) ) { // should not ignore
-                   return fsp.copyFile(filePath, path.join(dst, filePath.replace(src, "")));
-                }
-            }
-        })
-    ;
-
-    return _copy(src, dst);
-}
-
-async function touchItems_in (directory, { folder: dir_cb, file: file_cb}) {
-    return Promise.all(
-        fs.readdirSync(directory, {withFileTypes: true})
-            .map(async dirent_obj => {
-                if(dirent_obj.isDirectory()) {
-                    return dir_cb(path.join(directory, dirent_obj.name));
-                }
-                if(dirent_obj.isFile()) {
-                    return file_cb(path.join(directory, dirent_obj.name));
-                }
-                return false; // discard other file types
-            })
-    )
 }
