@@ -1,7 +1,6 @@
 import { rollup } from 'rollup';
 import babel from 'rollup-plugin-babel';
-
-import { IsIn, FileIO } from "./normalizeConfig.js";
+import { FileIO } from "./normalizeConfig.js";
 
 global.rollupCache = global.rollupCache || {};
 
@@ -12,22 +11,12 @@ function toCamelCase(str) {
 }
 
 async function jsCompiler(config) {
-    const {
-        file: file_input,
-        dest
-    } = config;
+    const file = new FileIO(config);
+    const _config = file._isInConfig;
 
-    const _config = new IsIn(config);
-    const file = new FileIO(file_input, dest);
-    const cache = global.rollupCache[file.input.base] ? global.rollupCache[file.input.base] : null;
-
-    if ('fileName' in config) {
-        file.output = file.output
-                          .replace(file.input.base, 
-                                config.fileName.replace('{name}', file.input.without_ext)
-                            );
-    }
-
+    const cache = global.rollupCache[file.input.base] 
+                    ? global.rollupCache[file.input.base] 
+                    : null;
     return (
         rollup({
             input: file.input.path,

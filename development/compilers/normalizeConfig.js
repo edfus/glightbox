@@ -1,4 +1,4 @@
-import { basename, extname, join } from 'path';
+import { basename, extname, join, isAbsolute } from 'path';
 
 class IsIn {
   constructor (obj) {
@@ -22,18 +22,34 @@ class IsIn {
 }
 
 class FileIO {
-  /**
-   * @param {string} src the abosolute path of source file
-   * @param {string} dst the abosolute path of the destination **folder**
+  /*NOTE
+   * a tired and loose config handler
+   * TODO: investigate arguments naming conventions. AND REMOVE THIS KIND OF SHIT.
    */
-  constructor (src, dst) {
+  constructor (config) {
+    const _config = new IsIn(config);
+
+    const src = _config("file", "src", "source",  "path", "path_i", "path_input")
+                      .orDefault("");
+    const dst = _config("dest", "destination", "path_o", "path_output", "outputPath", "output_path")
+                      .orDefault("");
+    if(!isAbsolute(src) || !isAbsolute(dst))
+      throw config; // isAbsolute will return false with default value ""
+
+    this._isInConfig = _config;
+
     this.input = new class {
       path = src
       base = basename(this.path)
       ext = extname(this.base)
       without_ext = this.base.replace(this.ext, '')
     }
-    this.output = join(dst, this.input.base);
+
+    if ('fileName' in config) {
+      this.output = join(dst, config.fileName.replace('{name}', this.input.without_ext));
+    } else {
+      this.output = dst;
+    }
   }
 }
 
