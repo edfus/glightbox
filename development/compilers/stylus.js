@@ -1,52 +1,39 @@
 import stylus from "stylus";
-import { basename, join, extname } from 'path';
 import { readFile, writeFile } from 'fs';
-import __dirname from "../helpers/__dirname.js";
+import { FileIO } from "./normalize-config.js";
 
 // https://github.com/stylus/stylus/blob/dev/docs/js.md
 
-stylus(str)
-  .set('filename', 'nesting.css')
-  .render(function(err, css){
-    // logic
-  });
+async function stylusCompiler(config) {
+  const file = new FileIO(config);
 
-  async function stylusCompiler(config) {
-    const {
-        file,
-        dest,
-        minify = true
-    } = config;
+  const content = await new Promise(
+      (resolve, reject) => 
+          readFile(
+            file.input.path, 
+            (err, data) => err ? reject(err) : resolve(data)
+          )
+  );
 
-    const fileName = basename(file);
-
-    const fileNameMin = extname(fileName);
-    const min = join(__dirname, '../', dest, fileName.replace(fileNameMin, `.min${fileNameMin}`));
-    
-    const css = await new Promise(
-        (resolve, reject) => 
-            readFile(from, 'utf8', 
-                (err, data) => err ? reject(err) : resolve(data)
-                )
-        );
-
-    return new Promise(async (resolve, reject) => {
-        return stylus()
-            .then(result => {
-                if (result && result.css) {
-                    writeFile(to, result.css, 'utf8', (err) => reject(err));
+  return (
+    new Promise((resolve, reject) => 
+        stylus(content)
+            .set('filename', file.input.base) // to provide better error reporting.
+            .render(async (err, css) => {
+                if(err)
+                  return reject(err);
+                
+                if(config.minify) {
+                  return (await import("./clean-css.js")).default(css, config);
+                } else {
+                  return writeFile(
+                    file.output, css,
+                    err => err ? reject(err) : resolve(err)
+                  )
                 }
-              })
-    })
-}
-
-async function minify () {
-  const minified = new cssclean({}).minify(result.css);
-  writeFile(min, minified.styles, 'utf8', (err) => reject(err));
-
-  if (result.map) {
-      writeFile(to + '.map', result.map, 'utf8', (err) => reject(err));
-  }
+            })
+    )
+  )
 }
 
 export default stylusCompiler;
