@@ -39,7 +39,7 @@ async function buildGlightboxJS() {
   const minName = name.replace('.js', '.min.js');
   const processed = join(config.js.dest, name);
   const code = readFileSync(processed, 'utf8');
-  const minified = minify(code);
+  const minified = minify.minify(code);
   const minifyPath = join(config.js.dest, minName);
 
   writeFileSync(minifyPath, minified.code);

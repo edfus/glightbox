@@ -10,22 +10,17 @@ const args = process.argv.slice(2);
 const root_directory = path.join(__dirname, '/..');
 
 (async () => {
-    if(extractArg(/(--build(-only)?=)|(-b)/i)) {
-        const { buildGlightboxJS, buildGlightboxCSS } = import("./builder.js");
-        return (
-            Promise.all(
-                [
-                    buildGlightboxJS(),
-                    buildGlightboxCSS()
-                ]
-            )
-            .then(() => console.info("\nDone.\n") || process.exit(0))
-        );
+    if(extractArg(/--build-only/i)) {
+        return build();
     } else {
         const tmpfolder = path.join("./.temp/", 'glightbox-master');
         const zipPath = path.join(root_directory, 'glightbox-master.zip');
 
         await adoptVersion();
+
+        if(extractArg(/--build(?!-only)|-b/i)) {
+            await build();
+        }
 
         if(extractArg(/(--zip=)|(-z)/i)) {
             fs.existsSync(zipPath) && await (fsp.rm || fsp.unlink)(zipPath);
@@ -42,7 +37,21 @@ const root_directory = path.join(__dirname, '/..');
         console.info("Exits.");
         return process.exit(0);
     }
-})()
+})();
+
+
+async function build () {
+    const { buildGlightboxJS, buildGlightboxCSS } = await import("./builder.js");
+    return (
+        Promise.all(
+            [
+                buildGlightboxJS(),
+                buildGlightboxCSS()
+            ]
+        )
+        .then(() => console.info("\nDone.\n") || process.exit(0))
+    );
+}
 
 
 async function adoptVersion () {

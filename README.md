@@ -658,7 +658,7 @@ We only provide support for bugs and feature requests, so please only post issue
 
 ## Changelog
 
-#### Latest version v3.1.3
+#### Latest version v3.1.4
 
 See the [CHANGELOG.md](CHANGELOG.md) file for details
 
