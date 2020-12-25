@@ -14,7 +14,7 @@ let config = {
       dest: offset.concat("dist/js"),
   },
   css: {
-      src: offset.concat("src/postcss"),
+      src: offset.concat("src/css"),
       dest: offset.concat("dist/css"),
   }
 };
@@ -51,7 +51,7 @@ async function buildGlightboxJS() {
 * Handle Postcss files
 */
 async function buildGlightboxCSS() {
-  const file = resolve(join(config.css.src, 'glightbox.css'));
+  const file = resolve(join(config.css.src, 'glightbox.styl'));
 
   await stylusCompiler({
       file,
