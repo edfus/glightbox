@@ -3,8 +3,8 @@ import { join, basename } from 'path';
 import { minify } from 'terser';
 
 import notify from './helpers/notify.js';
-import jscompiler from './jscompiler.js';
-import postcssCompiler from './postcss.js';
+import jscompiler from './compilers/jscompiler.js';
+import postcssCompiler from './compilers/postcss.js';
 
 let config = {
   js: {
@@ -55,14 +55,14 @@ async function buildGlightboxCSS() {
   const name = basename(file);
   const dest = config.css.dest;
 
-  await postcssCompiler({
-      file,
-      dest,
-      minify: true
-  }).catch(error => {
-    notify('Build Error', `View logs for more info`);
-    throw error;
-  });
+  // await postcssCompiler({
+  //     file,
+  //     dest,
+  //     minify: true
+  // }).catch(error => {
+  //   notify('Build Error', `View logs for more info`);
+  //   throw error;
+  // });
 
   console.info(`Built, Compiled and Minified ${name}`);
 }

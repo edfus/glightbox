@@ -6,7 +6,7 @@ import cssprettify from 'postcss-prettify';
 import cssclean from 'clean-css';
 import { basename, join, extname } from 'path';
 import { readFile, writeFile } from 'fs';
-import __dirname from "./helpers/__dirname.js";
+import __dirname from "../helpers/__dirname.js";
 
 async function postcssCompiler(config) {
     const {
