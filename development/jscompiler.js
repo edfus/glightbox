@@ -2,8 +2,6 @@ import { basename, extname, join } from 'path';
 
 import rollup from 'rollup';
 import babel from 'rollup-plugin-babel';
-import rollup_resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
 
 import __dirname from "./helpers/__dirname.js";
 
@@ -17,10 +15,19 @@ function toCamelCase(str) {
 
 class IsIn {
     constructor (obj) {
-        return key => {
+        return (key, ...left) => {
             return {
                 orDefault (defaultValue) {
-                    return obj.hasOwnProperty(key) ? obj[key] : defaultValue;
+                    if(left.length) {
+                        if(key in obj) return obj[key];
+                        for (let i = 0; i < left.length; i++) {
+                            if (left[i] in obj)
+                                return obj[left[i]];
+                        }
+                        return defaultValue;
+                    } else {
+                        return obj.hasOwnProperty(key) ? obj[key] : defaultValue;
+                    }
                 }
             }
         }
@@ -57,17 +64,15 @@ async function jscompiler(config) {
             input: file.input,
             cache: cache,
             plugins: [
-                rollup_resolve({
-                    mainFields: ['module', 'main'],
-                    browser: true
-                }),
-                commonjs(),
                 babel({
                     comments: false,
                     exclude: 'node_modules/**',
                     presets: [
                         ['@babel/preset-env', {
-                            modules: false
+                            modules: false, // https://babeljs.io/docs/en/babel-preset-env#modules
+                            targets: {
+                                esmodules: true
+                            }
                         }]
                     ]
                 }),
@@ -79,12 +84,9 @@ async function jscompiler(config) {
                 format: _config("format").orDefault("iife"),
                 strict: _config("strict").orDefault(true),
                 sourcemap: _config("sourcemap").orDefault(false),
-                name: _config("moduleID")
-                        .orDefault(
-                            _config("name")
-                                .orDefault(toCamelCase(file.input_without_ext))
-                            )
-            })
+                name: _config("moduleID", "name")
+                        .orDefault(toCamelCase(file.input_without_ext))
+            });
             return file.output;
         })
     );
