@@ -18,7 +18,7 @@ async function cssMinifier (something, possibleConfig) {
       break;
     case "object":
       config = something;
-      css = await fsp.readFile(file.input.path);
+      css = await fsp.readFile(file.input.path, "utf8");
       break;
     default: throw new Error(config);
   }
