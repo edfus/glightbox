@@ -53,7 +53,7 @@ async function buildGlightboxJS() {
 async function buildGlightboxCSS() {
   const file = resolve(join(config.css.src, 'glightbox.styl'));
 
-  await stylusCompiler({
+  console.log(await stylusCompiler({
       file,
       dest: resolve(config.css.dest),
       fileName: "{name}.min.css",
@@ -62,7 +62,7 @@ async function buildGlightboxCSS() {
   }).catch(error => {
     notify('Build Error', `View logs for more info`);
     throw error;
-  });
+  }))
 
   console.info(`Built, Compiled and Minified ${basename(file)}`);
 }

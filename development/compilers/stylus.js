@@ -10,7 +10,7 @@ async function stylusCompiler(config) {
   const content = await new Promise(
       (resolve, reject) => 
           readFile(
-            file.input.path, 
+            file.input.path, "utf8",
             (err, data) => err ? reject(err) : resolve(data)
           )
   );

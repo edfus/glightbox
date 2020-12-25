@@ -8,11 +8,11 @@ async function jsMinifier (options) {
   const file = new FileIO(options);
 
   return new Promise((resolve, reject) => {
-      readFile(file.input.path, async (err, data) => {
+      readFile(file.input.path, "utf8", async (err, data) => {
           if(err)
               return reject(err);
           
-          writeFile(file.output, (await minify(data.toString())).code, err => 
+          writeFile(file.output, (await minify(data)).code, err => 
               err ? reject(err) : resolve(err) 
           );
       })
