@@ -4,7 +4,7 @@ import cssnested from 'postcss-nested';
 import cssmqpacker from 'css-mqpacker';
 import cssprettify from 'postcss-prettify';
 import cssclean from 'clean-css';
-import { basename, join, extname, resolve } from 'path';
+import { basename, join, extname } from 'path';
 import { readFile, writeFile } from 'fs';
 import __dirname from "./helpers/__dirname.js";
 
