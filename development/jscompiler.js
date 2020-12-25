@@ -25,7 +25,7 @@ class TestConfig {
     }
 }
 
-function jscompiler(config) {
+async function jscompiler(config) {
     const {
         file: file_input,
         dest
@@ -50,7 +50,7 @@ function jscompiler(config) {
                             );
     }
 
-    return new Promise((resolve, reject) => {
+    return (
         rollup({
             input: file.input,
             cache: cache,
@@ -70,7 +70,7 @@ function jscompiler(config) {
                     ]
                 }),
             ]
-        }).then(async (bundle) => {
+        }).then(async bundle => {
             global.rollupCache[file.input_base] = bundle.cache;
             await bundle.write({
                 file: file.output,
@@ -82,16 +82,10 @@ function jscompiler(config) {
                             _config("name")
                                 .orDefault(toCamelCase(file.input_without_ext))
                             )
-            }).then(() => {
-                resolve(true);
-            }).catch(error => {
-                console.error(error)
-                reject(error);
-            });
-
+            })
             return file.output;
         })
-    })
+    );
 }
 
 export default jscompiler;

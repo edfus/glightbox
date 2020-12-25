@@ -17,29 +17,23 @@ let config = {
 };
 
 /**
-* Handle Javascript files
-* compile the javascript files
-* to es2015, minify and sync the files
-*
-* @return { Promise<Boolean> }
-*/
+ * rollup, babel (es2015), minify.
+ */
 async function buildGlightboxJS() {
   const file = join(config.js.src, 'glightbox.js');
 
   const name = basename(file);
 
-  const res = await jscompiler({
+  await jscompiler({
       file,
       dest: config.js.dest,
       format: 'umd',
       sourcemap: false,
       moduleID: 'GLightbox'
-  }).catch(error => console.log(error));
-
-  if (!res) {
-      notify('Build Error', `View logs for more info`);
-      return false;
-  }
+  }).catch(error => {
+    notify('Build Error', `View logs for more info`);
+    throw error;
+  });
 
   const minName = name.replace('.js', '.min.js');
   const processed = join(config.js.dest, name);
@@ -50,31 +44,27 @@ async function buildGlightboxJS() {
   writeFileSync(minifyPath, minified.code);
 
   console.info(`Built, Compiled and Minified ${name}`);
-  return true;
 }
 
 
 /**
 * Handle Postcss files
-* compile the css files
-*
-* @return { Promise<Boolean> }
 */
 async function buildGlightboxCSS() {
   const file = join(config.css.src, 'glightbox.css');
   const name = basename(file);
   const dest = config.css.dest;
 
-  let res = await postcssCompiler({
+  await postcssCompiler({
       file,
       dest,
       minify: true
-  }).catch(error => console.log(error));
-  if (!res) {
-      return false;
-  }
+  }).catch(error => {
+    notify('Build Error', `View logs for more info`);
+    throw error;
+  });
+
   console.info(`Built, Compiled and Minified ${name}`);
-  return true;
 }
 
 export { buildGlightboxJS, buildGlightboxCSS }
