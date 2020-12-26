@@ -24,11 +24,13 @@ async function stylusCompiler(config) {
                   return reject(err);
                 
                 if(config.minify) {
-                  return (await import("./clean-css.js")).default(css, config);
+                  return resolve(
+                    (await import("./clean-css.js")).default(css, config)
+                  );
                 } else {
                   return writeFile(
                     file.output, css,
-                    err => err ? reject(err) : resolve(err)
+                    err => err ? reject(err) : resolve(file.output)
                   )
                 }
             })
