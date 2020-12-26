@@ -63,7 +63,7 @@ async function buildGlightboxJS() {
 * Handle Postcss files
 */
 async function buildGlightboxCSS() {
-  const file = resolve(join(config.css.src, 'glightbox.styl'));
+  const file = resolve(join(config.css.src, 'glightbox@2.styl'));
 
   const options = {
       file,

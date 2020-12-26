@@ -2,9 +2,14 @@ import GLightbox from "./glightbox.js";
 
 const config = {
   onOpen: () => {
-      if(document.querySelector('.gotop')) //NOTE
+      if(document.querySelector('.gotop'))
           document.querySelector('.gotop').style.right = "calc(5% + " + scrollBar + "px)";  
   }
+}
+
+const pattern = {
+  search: /\.[^\.]{3,4}(\.webp)$/,
+  replace: /(\.webp)$/
 }
 
 Array.from(document.getElementsByClassName('article-entry')).forEach(article => {
@@ -27,11 +32,6 @@ Array.from(document.getElementsByClassName('article-entry')).forEach(article => 
     } else console.warn(img + ':no Source Attribute');
   });
 });
-
-const pattern = {
-  search: /\.[^\.]{3,4}(\.webp)$/,
-  replace: /(\.webp)$/
-}
 
 function removeWebpSuffix (url) {
   return pattern.search.test(url) ? url.replace(pattern.replace, '') : url;

@@ -15,7 +15,6 @@ vendors = official;
     overflow: hidden;
     touch-action: none;
     -webkit-text-size-adjust: 100%;
-    -webkit-backface-visibility: hidden;
     outline: none;
     overflow: hidden;
 
@@ -258,8 +257,12 @@ vendors = official;
     display: inline-flex;
     display: flex;
     width: auto;
-
-    .zoomed &
+    > .glightbox-error
+        position: relative;
+        left: 19.5px;
+        bottom: 15px;
+        min-width: 72px !important;
+    > .zoomed &
         box-shadow: none !important;
 
     .desc-top &,
