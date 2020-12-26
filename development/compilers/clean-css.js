@@ -9,21 +9,21 @@ import { FileIO } from "./normalize-config.js";
  * the second parameter should take the place of config.
  */
 async function cssMinifier (something, possibleConfig) {
-  let css, config;
+  let css, config, file;
 
   switch(typeof something) {
     case "string":
       config = possibleConfig;
+      file = new FileIO(config);
       css = something;
       break;
     case "object":
       config = something;
+      file = new FileIO(config);
       css = await fsp.readFile(file.input.path, "utf8");
       break;
     default: throw new Error(config);
   }
-
-  const file = new FileIO(config);
 
   const minified = new CleanCSS({
     inline: ['none'],
@@ -44,7 +44,7 @@ async function cssMinifier (something, possibleConfig) {
   }
 
   return Promise.all(promises)
-              .then(() => minified.stats.efficiency)
+              .then(() => file.output)
 }
 
 export default cssMinifier;

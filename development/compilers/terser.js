@@ -13,7 +13,7 @@ async function jsMinifier (options) {
               return reject(err);
           
           writeFile(file.output, (await minify(data)).code, err => 
-              err ? reject(err) : resolve(err) 
+              err ? reject(err) : resolve(file.output) 
           );
       })
   })

@@ -5,6 +5,7 @@ import __dirname from "./helpers/__dirname.js";
 import jsCompiler from './compilers/rollup.js';
 import jsMinifier from "./compilers/terser.js";
 import stylusCompiler from './compilers/stylus.js';
+import cssMinifier from "./compilers/clean-css.js";
 
 const offset = join(__dirname, "../");
 
@@ -53,15 +54,22 @@ async function buildGlightboxJS() {
 async function buildGlightboxCSS() {
   const file = resolve(join(config.css.src, 'glightbox.styl'));
 
-  console.log(await stylusCompiler({
+  const options = {
       file,
       dest: resolve(config.css.dest),
-      fileName: "{name}.min.css",
-      minify: true,
+      fileName: "{name}.css",
+      minify: false,
       sourcemap: false
-  }).catch(error => {
+  };
+
+  await stylusCompiler(options).catch(error => {
     notify('Build Error', `View logs for more info`);
     throw error;
+  }).then(file_o => cssMinifier({
+    file: file_o,
+    dest: options.dest,
+    fileName: "{name}.min.css",
+    sourcemap: false
   }))
 
   console.info(`Built, Compiled and Minified ${basename(file)}`);
