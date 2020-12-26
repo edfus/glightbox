@@ -16,7 +16,7 @@ export default class Slide {
         this.instance = instance;
     }
 
-    /**
+    /*TODO
      * Set slide content
      *
      * @param {node} slide

@@ -2603,13 +2603,8 @@
 
     }
 
-    var add_on_settings = {
-      onOpen: () => {
-        if (document.querySelector('.gotop')) document.querySelector('.gotop').style.right = "calc(5% + " + scrollBar + "px)";
-      }
-    };
-    function glightbox () {
-      var instance = new GlightboxInit(add_on_settings);
+    function glightbox (config) {
+      var instance = new GlightboxInit(config);
       instance.init();
       return instance;
     }

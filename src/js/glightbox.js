@@ -1094,15 +1094,8 @@ class GlightboxInit {
     }
 }
 
-const add_on_settings = {
-    onOpen: () => {
-        if(document.querySelector('.gotop')) //NOTE
-            document.querySelector('.gotop').style.right = "calc(5% + " + scrollBar + "px)";  
-    }
-}
-
-export default function () {
-    const instance = new GlightboxInit(add_on_settings);
+export default function (config) {
+    const instance = new GlightboxInit(config);
     instance.init();
 
     return instance;

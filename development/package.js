@@ -22,7 +22,7 @@ const root_directory = path.join(__dirname, '/..');
             await build();
         }
 
-        if(extractArg(/(--zip=)|(-z)/i)) {
+        if(extractArg(/(--zip)|(-z)/i)) {
             fs.existsSync(zipPath) && await (fsp.rm || fsp.unlink)(zipPath);
             await gemIntoSafe(tmpfolder)
                 .then(async safeFolder => {
@@ -31,10 +31,10 @@ const root_directory = path.join(__dirname, '/..');
                             zipPath
                         )
                 })
-                .then(() => console.info("Packaging process done."))
+                .then(() => console.info("Packaging process completed."))
                 .finally(() => fs.rmdirSync(tmpfolder, { recursive: true }));
         }
-        console.info("Exits.");
+        console.info("\nDone.\n");
         return process.exit(0);
     }
 })();
@@ -49,7 +49,10 @@ async function build () {
                 buildGlightboxCSS()
             ]
         )
-        .then(() => console.info("\nDone.\n") || process.exit(0))
+        .catch(error => {
+            notify('Build Errored', `View logs for more info`);
+            throw error;
+        })
     );
 }
 
