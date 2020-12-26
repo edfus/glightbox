@@ -347,6 +347,10 @@
 
             case 27:
               return instance.close();
+
+            case 13:
+            case 9:
+              event.preventDefault();
           }
         }
       });
@@ -1106,213 +1110,9 @@
 
     }
 
-    class DragSlides {
-      constructor() {
-        var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        var {
-          dragEl,
-          toleranceX = 40,
-          toleranceY = 65,
-          slide = null,
-          instance = null
-        } = config;
-        this.el = dragEl;
-        this.active = false;
-        this.dragging = false;
-        this.currentX = null;
-        this.currentY = null;
-        this.initialX = null;
-        this.initialY = null;
-        this.xOffset = 0;
-        this.yOffset = 0;
-        this.direction = null;
-        this.lastDirection = null;
-        this.toleranceX = toleranceX;
-        this.toleranceY = toleranceY;
-        this.toleranceReached = false;
-        this.dragContainer = this.el;
-        this.slide = slide;
-        this.instance = instance;
-        this.el.addEventListener('mousedown', e => this.dragStart(e), false);
-        this.el.addEventListener('mouseup', e => this.dragEnd(e), false);
-        this.el.addEventListener('mousemove', e => this.drag(e), false);
-      }
-
-      dragStart(e) {
-        if (this.slide.classList.contains('zoomed')) {
-          this.active = false;
-          return;
-        }
-
-        if (e.type === 'touchstart') {
-          this.initialX = e.touches[0].clientX - this.xOffset;
-          this.initialY = e.touches[0].clientY - this.yOffset;
-        } else {
-          this.initialX = e.clientX - this.xOffset;
-          this.initialY = e.clientY - this.yOffset;
-        }
-
-        var clicked = e.target.nodeName.toLowerCase();
-        var exludeClicks = ['input', 'select', 'textarea', 'button', 'a'];
-
-        if (e.target.classList.contains('nodrag') || closest(e.target, '.nodrag') || exludeClicks.indexOf(clicked) !== -1) {
-          this.active = false;
-          return;
-        }
-
-        e.preventDefault();
-
-        if (e.target === this.el || clicked !== 'img' && closest(e.target, '.gslide-inline')) {
-          this.active = true;
-          this.el.classList.add('dragging');
-          this.dragContainer = closest(e.target, '.ginner-container');
-        }
-      }
-
-      dragEnd(e) {
-        e && e.preventDefault();
-        this.initialX = 0;
-        this.initialY = 0;
-        this.currentX = null;
-        this.currentY = null;
-        this.initialX = null;
-        this.initialY = null;
-        this.xOffset = 0;
-        this.yOffset = 0;
-        this.active = false;
-
-        if (this.doSlideChange) {
-          this.instance.preventOutsideClick = true;
-          this.doSlideChange == 'right' && this.instance.prevSlide();
-          this.doSlideChange == 'left' && this.instance.nextSlide();
-        }
-
-        if (this.doSlideClose) {
-          this.instance.close();
-        }
-
-        if (!this.toleranceReached) {
-          this.setTranslate(this.dragContainer, 0, 0, true);
-        }
-
-        setTimeout(() => {
-          this.instance.preventOutsideClick = false;
-          this.toleranceReached = false;
-          this.lastDirection = null;
-          this.dragging = false;
-          this.el.isDragging = false;
-          this.el.classList.remove('dragging');
-          this.slide.classList.remove('dragging-nav');
-          this.dragContainer.style.transform = "";
-          this.dragContainer.style.transition = "";
-        }, 100);
-      }
-
-      drag(e) {
-        if (this.active) {
-          e.preventDefault();
-          this.slide.classList.add('dragging-nav');
-
-          if (e.type === 'touchmove') {
-            this.currentX = e.touches[0].clientX - this.initialX;
-            this.currentY = e.touches[0].clientY - this.initialY;
-          } else {
-            this.currentX = e.clientX - this.initialX;
-            this.currentY = e.clientY - this.initialY;
-          }
-
-          this.xOffset = this.currentX;
-          this.yOffset = this.currentY;
-          this.el.isDragging = true;
-          this.dragging = true;
-          this.doSlideChange = false;
-          this.doSlideClose = false;
-          var currentXInt = Math.abs(this.currentX);
-          var currentYInt = Math.abs(this.currentY);
-
-          if (currentXInt > 0 && currentXInt >= Math.abs(this.currentY) && (!this.lastDirection || this.lastDirection == 'x')) {
-            this.yOffset = 0;
-            this.lastDirection = 'x';
-            this.setTranslate(this.dragContainer, this.currentX, 0);
-            var doChange = this.shouldChange();
-
-            if (!this.instance.settings.dragAutoSnap && doChange) {
-              this.doSlideChange = doChange;
-            }
-
-            if (this.instance.settings.dragAutoSnap && doChange) {
-              this.instance.preventOutsideClick = true;
-              this.toleranceReached = true;
-              this.active = false;
-              this.instance.preventOutsideClick = true;
-              this.dragEnd(null);
-              doChange == 'right' && this.instance.prevSlide();
-              doChange == 'left' && this.instance.nextSlide();
-              return;
-            }
-          }
-
-          if (this.toleranceY > 0 && currentYInt > 0 && currentYInt >= currentXInt && (!this.lastDirection || this.lastDirection == 'y')) {
-            this.xOffset = 0;
-            this.lastDirection = 'y';
-            this.setTranslate(this.dragContainer, 0, this.currentY);
-            var doClose = this.shouldClose();
-
-            if (!this.instance.settings.dragAutoSnap && doClose) {
-              this.doSlideClose = true;
-            }
-
-            if (this.instance.settings.dragAutoSnap && doClose) {
-              this.instance.close();
-            }
-
-            return;
-          }
-        }
-      }
-
-      shouldChange() {
-        var doChange = false;
-        var currentXInt = Math.abs(this.currentX);
-
-        if (currentXInt >= this.toleranceX) {
-          var dragDir = this.currentX > 0 ? 'right' : 'left';
-
-          if (dragDir == 'left' && this.slide !== this.slide.parentNode.lastChild || dragDir == 'right' && this.slide !== this.slide.parentNode.firstChild) {
-            doChange = dragDir;
-          }
-        }
-
-        return doChange;
-      }
-
-      shouldClose() {
-        var doClose = false;
-        var currentYInt = Math.abs(this.currentY);
-
-        if (currentYInt >= this.toleranceY) {
-          doClose = true;
-        }
-
-        return doClose;
-      }
-
-      setTranslate(node, xPos, yPos) {
-        var animated = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
-        if (animated) {
-          node.style.transition = "all .2s ease";
-        } else {
-          node.style.transition = "";
-        }
-
-        node.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-      }
-
-    }
-
     function slideImage(slide, data, callback) {
       var slideMedia = slide.querySelector('.gslide-media');
+      var slideTitle = slide.querySelector('.gslide-title');
       var img = new Image();
       var titleID = 'gSlideTitle_' + data.index;
       var textID = 'gSlideDesc_' + data.index;
@@ -1323,6 +1123,22 @@
       }, false);
       img.src = data.href;
       img.alt = '';
+      img.addEventListener('error', function () {
+        if (!img.errored) {
+          img.errored = true;
+
+          if (/(\.webp)$/.test(img.src)) {
+            img.src = img.src.substring(0, img.src.length - 5);
+          } else {
+            img.src = img.src.concat('.webp');
+          }
+        } else {
+          img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIAQMAAABvIyEEAAAABlBMVEUAAABTU1OoaSf/AAAAAXRSTlMAQObYZgAAAENJREFUeF7tzbEJACEQRNGBLeAasBCza2lLEGx0CxFGG9hBMDDxRy/72O9FMnIFapGylsu1fgoBdkXfUHLrQgdfrlJN1BdYBjQQm3UAAAAASUVORK5CYII=';
+          img.alt = '404 Not Found';
+          img.classList.add('error');
+          slideTitle.innerHTML = '<div style="min-width: 52px;text-align: center;">ERROR</div>';
+        }
+      }, false);
 
       if (data.title !== '') {
         img.setAttribute('aria-labelledby', titleID);
@@ -1543,6 +1359,12 @@
             }
           } else {
             slideText.parentNode.removeChild(slideText);
+
+            if (slideTitle) {
+              slideTitle.classList.add('without-desc');
+              slideTitle.parentNode.classList.add('without-desc');
+              slideTitle.parentNode.parentNode.classList.add('without-desc');
+            }
           }
 
           addClass(slideMedia.parentNode, "desc-".concat(position));
@@ -1553,16 +1375,6 @@
         addClass(slide, 'loaded');
         return slideImage(slide, slideConfig, () => {
           var img = slide.querySelector('img');
-
-          if (slideConfig.draggable) {
-            new DragSlides({
-              dragEl: img,
-              toleranceX: settings.dragToleranceX,
-              toleranceY: settings.dragToleranceY,
-              slide: slide,
-              instance: this.instance
-            });
-          }
 
           if (slideConfig.zoomable && img.naturalWidth > img.offsetWidth) {
             addClass(img, 'zoomable');
@@ -1674,7 +1486,7 @@
       onClose: null,
       loop: false,
       zoomable: true,
-      draggable: true,
+      draggable: false,
       dragAutoSnap: false,
       dragToleranceX: 40,
       dragToleranceY: 65,
@@ -1717,8 +1529,8 @@
         prev: '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 477.175 477.175" xml:space="preserve"><g><path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z"/></g></svg>'
       }
     };
-    defaults.slideHTML = "<div class=\"gslide\">\n    <div class=\"gslide-inner-content\">\n        <div class=\"ginner-container\">\n            <div class=\"gslide-media\">\n            </div>\n            <div class=\"gslide-description\">\n                <div class=\"gdesc-inner\">\n                    <h4 class=\"gslide-title\"></h4>\n                    <div class=\"gslide-desc\"></div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>";
-    defaults.lightboxHTML = "<div id=\"glightbox-body\" class=\"glightbox-container\">\n    <div class=\"gloader visible\"></div>\n    <div class=\"goverlay\"></div>\n    <div class=\"gcontainer\">\n    <div id=\"glightbox-slider\" class=\"gslider\"></div>\n    <button class=\"gnext gbtn\" tabindex=\"0\" aria-label=\"Next\">{nextSVG}</button>\n    <button class=\"gprev gbtn\" tabindex=\"1\" aria-label=\"Previous\">{prevSVG}</button>\n    <button class=\"gclose gbtn\" tabindex=\"2\" aria-label=\"Close\">{closeSVG}</button>\n</div>\n</div>";
+    defaults.slideHTML = "<section class=\"gslide\">\n        <div class=\"gslide-inner-content\">\n            <figure class=\"ginner-container\">\n                <div class=\"gslide-media\">\n                </div>\n                <figcaption class=\"gslide-description\">\n                    <div class=\"gdesc-inner\">\n                        <h4 class=\"gslide-title\"></h4>\n                        <div class=\"gslide-desc\"></div>\n                    </div>\n                </figcaption>\n            </figure>\n        </div>\n    </section>";
+    defaults.lightboxHTML = "<aside id=\"glightbox-body\" class=\"glightbox-container\">\n        <div class=\"gloader visible\"></div>\n        <div class=\"goverlay\"></div>\n        <div class=\"gcontainer\">\n            <div id=\"glightbox-slider\" class=\"gslider\"></div>\n            <button class=\"gnext gbtn\" tabindex=\"-1\" aria-label=\"Next\">{nextSVG}</button>\n            <button class=\"gprev gbtn\" tabindex=\"-1\" aria-label=\"Previous\">{prevSVG}</button>\n            <button class=\"gclose gbtn\" tabindex=\"-1\" aria-label=\"Close\">{closeSVG}</button>\n        </div>\n    </aside>";
 
     class GlightboxInit {
       constructor() {
@@ -2408,40 +2220,13 @@
           return;
         }
 
-        var winSize = windowSize();
-
-        var image = slide.querySelector('.gslide-image');
-        var description = this.slideDescription;
-        var winWidth = winSize.width;
-
-        if (winWidth <= 768) {
+        if (windowSize().width <= 768) {
           addClass(document.body, 'glightbox-mobile');
         } else {
           removeClass(document.body, 'glightbox-mobile');
         }
 
-        if (!image) {
-          return;
-        }
-
-        var descriptionResize = false;
-
-        if (description && (hasClass(description, 'description-bottom') || hasClass(description, 'description-top')) && !hasClass(description, 'gabsolute')) {
-          descriptionResize = true;
-        }
-
-        if (winWidth <= 768) {
-          var imgNode = image.querySelector('img');
-          imgNode.setAttribute('style', '');
-        } else if (descriptionResize) {
-          var descHeight = description.offsetHeight;
-
-          var _imgNode = image.querySelector('img');
-
-          _imgNode.setAttribute('style', "max-height: calc(100vh - ".concat(descHeight, "px)"));
-
-          description.setAttribute('style', "max-width: ".concat(_imgNode.offsetWidth, "px;"));
-        }
+        return;
       }
 
       reload() {
