@@ -17,8 +17,8 @@ async function jsCompiler(config) {
     const cache = global.rollupCache[file.input.base] 
                     ? global.rollupCache[file.input.base] 
                     : null;
-    return (
-        rollup({
+    return ( // UMD and IIFE output formats are not supported for code-splitting builds.
+        rollup({ // https://rollupjs.org/guide/en/#rolluprollup
             input: file.input.path,
             cache: cache,
             plugins: [
@@ -45,6 +45,7 @@ async function jsCompiler(config) {
                 name: _config("moduleID", "name")
                         .orDefault(toCamelCase(file.input.without_ext))
             });
+            await bundle.close();
             return file.output;
         })
     );

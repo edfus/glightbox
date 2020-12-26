@@ -1,6 +1,5 @@
 import { join, basename, resolve } from 'path';
 
-import notify from './helpers/notify.js';
 import __dirname from "./helpers/__dirname.js";
 import jsCompiler from './compilers/rollup.js';
 import jsMinifier from "./compilers/terser.js";
@@ -21,7 +20,7 @@ let config = {
 };
 
 /**
- * rollup, babel (es2015), minify.
+ * rollup, babel, minify.
  */
 async function buildGlightboxJS() {
   const file = resolve(join(config.js.src, 'glightbox.js'));
@@ -33,15 +32,27 @@ async function buildGlightboxJS() {
       format: 'umd', // amd, cjs, es, iife, umd, system. esm? universal module.
       sourcemap: false,
       moduleID: 'GLightbox'
-  }).catch(error => {
-    notify('Build Error', `View logs for more info`);
-    throw error;
-  });
+  })
 
   await jsMinifier({
       file: outputFile,
       path_o: resolve(config.js.dest),
       fileName: "{name}.min.js"
+  })
+
+  const trigger_o_file = await jsCompiler({
+      src:  resolve(join(config.js.src, 'trigger.js')),
+      dest: resolve(config.js.dest),
+      fileName: "glightbox_{name}.min.js",
+      format: 'iife',
+      sourcemap: false,
+      moduleID: 'GLightbox_trigger'
+  });
+
+  await jsMinifier({
+      file: trigger_o_file,
+      path_o: resolve(config.js.dest),
+      fileName: "{name}.js"
   })
 
   console.info(`Built, Compiled and Minified ${basename(file)}`)
@@ -62,15 +73,14 @@ async function buildGlightboxCSS() {
       sourcemap: false
   };
 
-  await stylusCompiler(options).catch(error => {
-    notify('Build Error', `View logs for more info`);
-    throw error;
-  }).then(file_o => cssMinifier({
+  const file_o = await stylusCompiler(options);
+
+  await cssMinifier({
     file: file_o,
     dest: options.dest,
     fileName: "{name}.min.css",
     sourcemap: false
-  }))
+  });
 
   console.info(`Built, Compiled and Minified ${basename(file)}`);
 }
