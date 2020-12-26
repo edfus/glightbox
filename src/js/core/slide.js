@@ -16,7 +16,7 @@ export default class Slide {
         this.instance = instance;
     }
 
-    /*TODO
+    /**
      * Set slide content
      *
      * @param {node} slide
@@ -87,6 +87,11 @@ export default class Slide {
                 }
             } else {
                 slideText.parentNode.removeChild(slideText);
+                if(slideTitle){
+                    slideTitle.classList.add('without-desc');
+                    slideTitle.parentNode.classList.add('without-desc');
+                    slideTitle.parentNode.parentNode.classList.add('without-desc');
+                }
             }
             addClass(slideMedia.parentNode, `desc-${position}`);
             addClass(slideDesc.parentNode, `description-${position}`);
@@ -98,15 +103,6 @@ export default class Slide {
         return slideImage(slide, slideConfig, () => {
             const img = slide.querySelector('img');
 
-            if (slideConfig.draggable) {
-                new DragSlides({
-                    dragEl: img,
-                    toleranceX: settings.dragToleranceX,
-                    toleranceY: settings.dragToleranceY,
-                    slide: slide,
-                    instance: this.instance
-                });
-            }
             if (slideConfig.zoomable && img.naturalWidth > img.offsetWidth) {
                 addClass(img, 'zoomable');
                 new ZoomImages(img, slide, () => {

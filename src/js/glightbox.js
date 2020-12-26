@@ -35,7 +35,7 @@ const defaults = {
     onClose: null,
     loop: false,
     zoomable: true,
-    draggable: true,
+    draggable: false, //
     dragAutoSnap: false,
     dragToleranceX: 40,
     dragToleranceY: 65,
@@ -73,31 +73,33 @@ const defaults = {
 // prev arrow class = gnext
 // next arrow id = gprev
 // close id = gclose
-defaults.slideHTML = `<div class="gslide">
-    <div class="gslide-inner-content">
-        <div class="ginner-container">
-            <div class="gslide-media">
-            </div>
-            <div class="gslide-description">
-                <div class="gdesc-inner">
-                    <h4 class="gslide-title"></h4>
-                    <div class="gslide-desc"></div>
+defaults.slideHTML = 
+    `<section class="gslide">
+        <div class="gslide-inner-content">
+            <figure class="ginner-container">
+                <div class="gslide-media">
                 </div>
-            </div>
+                <figcaption class="gslide-description">
+                    <div class="gdesc-inner">
+                        <h4 class="gslide-title"></h4>
+                        <div class="gslide-desc"></div>
+                    </div>
+                </figcaption>
+            </figure>
         </div>
-    </div>
-</div>`;
+    </section>`;
 
-defaults.lightboxHTML = `<div id="glightbox-body" class="glightbox-container">
-    <div class="gloader visible"></div>
-    <div class="goverlay"></div>
-    <div class="gcontainer">
-    <div id="glightbox-slider" class="gslider"></div>
-    <button class="gnext gbtn" tabindex="0" aria-label="Next">{nextSVG}</button>
-    <button class="gprev gbtn" tabindex="1" aria-label="Previous">{prevSVG}</button>
-    <button class="gclose gbtn" tabindex="2" aria-label="Close">{closeSVG}</button>
-</div>
-</div>`;
+defaults.lightboxHTML = 
+    `<aside id="glightbox-body" class="glightbox-container">
+        <div class="gloader visible"></div>
+        <div class="goverlay"></div>
+        <div class="gcontainer">
+            <div id="glightbox-slider" class="gslider"></div>
+            <button class="gnext gbtn" tabindex="-1" aria-label="Next">{nextSVG}</button>
+            <button class="gprev gbtn" tabindex="-1" aria-label="Previous">{prevSVG}</button>
+            <button class="gclose gbtn" tabindex="-1" aria-label="Close">{closeSVG}</button>
+        </div>
+    </aside>`;
 
 
 /**
@@ -261,7 +263,7 @@ class GlightboxInit {
 
         this.slideDescription = slideNode.querySelector('.gslide-description');
         this.slideDescriptionContained = this.slideDescription && _.hasClass(this.slideDescription.parentNode, 'gslide-media');
-        //NOTE: gslide-media
+
         // Preload subsequent slides
         if (this.settings.preload) {
             this.preloadSlide(index + 1);
@@ -886,39 +888,13 @@ class GlightboxInit {
             return;
         }
 
-        const winSize = _.windowSize();
-        const image = slide.querySelector('.gslide-image');
-        const description = this.slideDescription;
-
-        let winWidth = winSize.width;
-        let winHeight = winSize.height;
-
-        if (winWidth <= 768) {
+        if (_.windowSize().width <= 768) {
             _.addClass(document.body, 'glightbox-mobile');
         } else {
             _.removeClass(document.body, 'glightbox-mobile');
         }
-
-        if (!image) {
-            return;
-        }
-
-        let descriptionResize = false;
-        if (description && (_.hasClass(description, 'description-bottom') || _.hasClass(description, 'description-top')) && !_.hasClass(description, 'gabsolute')) {
-            descriptionResize = true;
-        }
-
-        if (winWidth <= 768) {
-            let imgNode = image.querySelector('img');
-            imgNode.setAttribute('style', '');
-        } else if (descriptionResize) {
-            let descHeight = description.offsetHeight;
-            let imgNode = image.querySelector('img');
-
-            imgNode.setAttribute('style', `max-height: calc(100vh - ${descHeight}px)`);
-            description.setAttribute('style', `max-width: ${imgNode.offsetWidth}px;`);
-        }
-
+        
+        return;
     }
 
 

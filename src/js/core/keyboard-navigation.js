@@ -22,6 +22,8 @@ export default function keyboardNavigation(instance) {
                 case 39: return instance.nextSlide(); // ArrowRight
                 case 37: return instance.prevSlide(); // ArrowLeft
                 case 27: return instance.close();     // Escape
+                case 13: // fall through 
+                case 9:  event.preventDefault(); // Enter, Tab
             }
         }
     })
